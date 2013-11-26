@@ -396,6 +396,7 @@
     <ClCompile Include="Network.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="bis_changelog" />
     <None Include="Network.vc.def" />
     <None Include="NetworkW.vc.def" />
     <CustomBuild Include="NetEng.lng">

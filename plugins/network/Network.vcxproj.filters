@@ -48,6 +48,7 @@
       <Filter>Source Files</Filter>
     </None>
     <None Include="changelog" />
+    <None Include="bis_changelog" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetCfg.hpp">
