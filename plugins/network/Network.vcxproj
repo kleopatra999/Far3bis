@@ -398,6 +398,7 @@
     <ClCompile Include="Network.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="bis_changelog" />
     <None Include="NetworkW.vc.def" />
     <CustomBuild Include="NetEng.lng">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'">Copying %(Identity)</Message>
