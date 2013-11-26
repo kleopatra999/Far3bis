@@ -112,22 +112,53 @@ intptr_t WINAPI hndOpenEditor(HANDLE hDlg, int msg, int param1, void* param2)
 
 bool dlgOpenEditor(string &strFileName, UINT &codepage)
 {
+	#if 1
+	//Maximus: поддержка "узких" дисплеев
+	if (ScrX < 30)
+	{
+		_ASSERTE(ScrX>=30);
+		return false;
+	}
+	int BorderW = (72<(ScrX-1))?72:(ScrX-1);
+	int ElemW = BorderW - 2; // 70
+	#endif
+
 	const wchar_t *HistoryName=L"NewEdit";
 	FarDialogItem EditDlgData[]=
 	{
+		#if 1
+		//Maximus: поддержка "узких" дисплеев
+		{DI_DOUBLEBOX,3,1,BorderW,8,0,nullptr,nullptr,0,MSG(MEditTitle)},
+		#else
 		{DI_DOUBLEBOX,3,1,72,8,0,nullptr,nullptr,0,MSG(MEditTitle)},
+		#endif
 		{DI_TEXT,     5,2, 0,2,0,nullptr,nullptr,0,MSG(MEditOpenCreateLabel)},
+		#if 1
+		//Maximus: поддержка "узких" дисплеев
+		{DI_EDIT,     5,3,ElemW,3,0,HistoryName,nullptr,DIF_FOCUS|DIF_HISTORY|DIF_USELASTHISTORY|DIF_EDITEXPAND|DIF_EDITPATH,L""},
+		#else
 		{DI_EDIT,     5,3,70,3,0,HistoryName,nullptr,DIF_FOCUS|DIF_HISTORY|DIF_USELASTHISTORY|DIF_EDITEXPAND|DIF_EDITPATH,L""},
+		#endif
 		{DI_TEXT,     3,4, 0,4,0,nullptr,nullptr,DIF_SEPARATOR,L""},
 		{DI_TEXT,     5,5, 0,5,0,nullptr,nullptr,0,MSG(MEditCodePage)},
+		#if 1
+		//Maximus: поддержка "узких" дисплеев
+		{DI_COMBOBOX,25,5,ElemW,5,0,nullptr,nullptr,DIF_DROPDOWNLIST|DIF_LISTWRAPMODE|DIF_LISTAUTOHIGHLIGHT,L""},
+		#else
 		{DI_COMBOBOX,25,5,70,5,0,nullptr,nullptr,DIF_DROPDOWNLIST|DIF_LISTWRAPMODE|DIF_LISTAUTOHIGHLIGHT,L""},
+		#endif
 		{DI_TEXT,     3,6, 0,6,0,nullptr,nullptr,DIF_SEPARATOR,L""},
 		{DI_BUTTON,   0,7, 0,7,0,nullptr,nullptr,DIF_DEFAULTBUTTON|DIF_CENTERGROUP,MSG(MOk)},
 		{DI_BUTTON,   0,7, 0,7,0,nullptr,nullptr,DIF_CENTERGROUP,MSG(MCancel)},
 	};
 	MakeDialogItemsEx(EditDlgData,EditDlg);
 	Dialog Dlg(EditDlg, ARRAYSIZE(EditDlg), hndOpenEditor, &codepage);
+	#if 1
+	//Maximus: поддержка "узких" дисплеев
+	Dlg.SetPosition(-1,-1,BorderW+4,10);
+	#else
 	Dlg.SetPosition(-1,-1,76,10);
+	#endif
 	Dlg.SetHelp(L"FileOpenCreate");
 	Dlg.SetId(FileOpenCreateId);
 	Dlg.Process();
