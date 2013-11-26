@@ -491,6 +491,7 @@ void NetBrowser::FreeFindData(PluginPanelItem *PanelItem,int ItemsNumber)
 		free((void*)PanelItem[I].CustomColumnData[1]);
 		free((void*)PanelItem[I].CustomColumnData);
 		free((void*)PanelItem[I].FileName);
+		free((void*)PanelItem[I].Description);
 	}
 
 	free(PanelItem);
