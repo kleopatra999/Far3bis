@@ -1189,6 +1189,10 @@ int FileEditor::ReProcessKey(int Key,int CalledFromControl)
 					}
 				}
 
+				#if 1
+				//Maximus: возможно, этот фикс уже не нужен
+				FarChDir(strOldCurDir); // возможно правильнее выкинуть: FarChDir(strStartDir); - 2 вызова //???
+				#endif
 				return TRUE;
 			}
 			// $ 30.05.2003 SVS - Shift-F4 в редакторе/вьювере позволяет открывать другой редактор/вьювер (пока только редактор)
