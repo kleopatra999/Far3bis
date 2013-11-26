@@ -1150,6 +1150,14 @@ int FileEditor::ReProcessKey(int Key,int CalledFromControl)
 						}
 						Done=TRUE;
 					}
+					#if 1
+					//Maximus
+					else if (SaveResult==SAVEFILE_CANCEL)
+					{
+						// Если был отказ от сохранения - не нужно повторно спрашивать (по ShiftF10), сохранить или нет
+						return FALSE;
+					}
+					#endif
 					else
 					{
 						Done=TRUE;
