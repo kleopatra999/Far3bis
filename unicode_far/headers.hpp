@@ -164,6 +164,22 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # define _wcstoi64 wcstoll
 #endif // __GNUC__
 
+//Maximus: для отладки
+#ifdef _DEBUG
+	#ifndef _CRT_WIDE
+	#define __CRT_WIDE(_String) L ## _String
+	#define _CRT_WIDE(_String) __CRT_WIDE(_String)
+	#endif
+	#define MY_ASSERT_EXPR(expr, msg) \
+		if (!(expr)) { \
+			if (MessageBox(NULL,msg,L"Assertion",MB_RETRYCANCEL|MB_SYSTEMMODAL)==IDRETRY) \
+				DebugBreak(); \
+		}
+	#define _ASSERTE(x)  MY_ASSERT_EXPR((x), _CRT_WIDE(#x))
+#else
+	#define _ASSERTE(x)
+#endif
+
 inline const wchar_t* NullToEmpty(const wchar_t* Str) { return Str? Str : L"";}
 inline const wchar_t* EmptyToNull(const wchar_t* Str) { return (Str && !*Str)? nullptr : Str;}
 
@@ -201,10 +217,18 @@ inline void ClearArray(T& a)
 
 #include "library_extensions.hpp"
 
+#if 1
+//Maxmus: Для отлова ошибок - кидаем ассерты
+template <typename T>
+bool CheckNullOrStructSize(const T* s) {_ASSERTE(!s || (s->StructSize >= sizeof(T))); return !s || (s->StructSize >= sizeof(T));}
+template <typename T>
+bool CheckStructSize(const T* s) {_ASSERTE(s && (s->StructSize >= sizeof(T))); return s && (s->StructSize >= sizeof(T));}
+#else
 template <typename T>
 bool CheckNullOrStructSize(const T* s) {return !s || (s->StructSize >= sizeof(T));}
 template <typename T>
 bool CheckStructSize(const T* s) {return s && (s->StructSize >= sizeof(T));}
+#endif
 
 template <typename type_1, typename type_2>
 struct simple_pair
