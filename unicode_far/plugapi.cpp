@@ -1077,6 +1077,13 @@ const wchar_t* WINAPI apiGetMsgFn(const GUID* PluginId,intptr_t MsgId)
 
 		if (pPlugin->InitLang(strPath))
 			return pPlugin->GetMsg(static_cast<LNGID>(MsgId));
+		//Maximus: для отладки
+		_ASSERTE((pPlugin!=NULL) && FALSE);
+	}
+	else
+	{
+		//Maximus: Для отладки
+		_ASSERTE(pPlugin!=NULL);
 	}
 	return L"";
 }
