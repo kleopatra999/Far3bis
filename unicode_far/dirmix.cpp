@@ -266,6 +266,8 @@ void CreatePath(const string &Path, bool Simple)
 				if (!Simple && Global->Opt->CreateUppercaseFolders && !IsCaseMixed(Part)) //BUGBUG
 					Upper(Part);
 
+				//Maximus: пытается (безуспешно) последовательно создать "A:", "A:\4", "A:\4\"
+				//Maximus: BUGBUG: игнорируется ошибка создания каталога!
 				if(api::CreateDirectory(Part, nullptr) && !Simple)
 					TreeList::AddTreeName(Part);
 			}
