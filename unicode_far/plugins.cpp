@@ -331,6 +331,23 @@ void PluginManager::LoadModels()
 	}
 }
 
+#if 1
+//Maximus: для отлова багов
+bool PluginManager::IsPluginValid(Plugin *pPlugin)
+{
+	Plugin *pTest;
+
+	for (size_t i = 0; i < PluginsCount; i++)
+	{
+		pTest = PluginsData[i];
+		if (pTest == pPlugin)
+			return true;
+	}
+
+	return false;
+}
+#endif
+
 void PluginManager::LoadPlugins()
 {
 	TaskBar TB(false);
