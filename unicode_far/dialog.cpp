@@ -60,6 +60,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "colormix.hpp"
 #include "mix.hpp"
 
+//Maximus: debug
+#include "plugapi.hpp"
+
 #define VTEXT_ADN_SEPARATORS	1
 
 // Флаги для функции ConvertItem
@@ -4723,6 +4726,18 @@ intptr_t WINAPI SendDlgMessage(HANDLE hDlg,int Msg,int Param1,void* Param2)
 {
 	if (!hDlg)
 		return 0;
+
+	#if 1
+	//Maximus: для отлова недобросовестных плагинов
+	if (gnMainThreadId != GetCurrentThreadId() && Msg < DM_USER)
+	{
+		BOOL lbSafe = FALSE;
+		if (!lbSafe)
+		{
+			ReportThreadUnsafeCall(L"SendDlgMessage(%u)", Msg);
+		}
+	}
+	#endif
 
 	Dialog* Dlg=(Dialog*)hDlg;
 	CriticalSectionLock Lock(Dlg->CS);
