@@ -94,6 +94,10 @@ bool PluginSynchro::Process(void)
 
 			if (pPlugin)
 			{
+				#ifdef _DEBUG
+				//Maximus: вроде должно быть исправлено, проверим
+				_ASSERTE(CtrlObject->Plugins->IsPluginValid(pPlugin));
+				#endif
 				pPlugin->ProcessSynchroEvent(SE_COMMONSYNCHRO,param);
 				res=true;
 			}
