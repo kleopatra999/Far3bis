@@ -58,6 +58,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "panelmix.hpp"
 #include "mix.hpp"
 #include "dirinfo.hpp"
+#if 1
+//Maximus: RemoveToRecycleBin глобальная, используется в расширенном меню плагинов
+#include "delete.hpp"
+#endif
 #include "elevation.hpp"
 #include "wakeful.hpp"
 #include "stddlg.hpp"
@@ -81,7 +85,10 @@ static void ShellDeleteMsg(const wchar_t* Name, DEL_MODE Mode, int Percent, int 
 static int AskDeleteReadOnly(const string& Name,DWORD Attr,int Wipe);
 static int ShellRemoveFile(const string& Name,int Wipe, int TotalPercent);
 static int ERemoveDirectory(const string& Name,DIRDELTYPE Type);
+#if 0
+//Maximus: RemoveToRecycleBin глобальная, используется в расширенном меню плагинов
 static int RemoveToRecycleBin(const string& Name);
+#endif
 static bool WipeFile(const string& Name, int TotalPercent, bool& Cancel);
 static int WipeDirectory(const string& Name);
 static void PR_ShellDeleteMsg();
