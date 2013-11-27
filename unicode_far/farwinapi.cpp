@@ -920,6 +920,13 @@ BOOL SetCurrentDirectory(const string& PathName, bool Validate)
 		}
 	}
 
+	#ifdef _DEBUG
+	//Maximus: для отладки
+	OutputDebugStringW(L"apiSetCurrentDirectory(");
+	OutputDebugStringW(strDir.CPtr());
+	OutputDebugStringW(L")\n");
+	#endif
+	
 	strCurrentDirectory()=strDir;
 
 #ifndef NO_WRAPPER
