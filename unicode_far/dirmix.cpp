@@ -283,6 +283,8 @@ void CreatePath(const string &Path, bool Simple)
 			if (!Simple && Opt.CreateUppercaseFolders && !IsCaseMixed(DirPart) && !Exist)  //BUGBUG
 				CharUpper(DirPart);
 
+			//Maximus: пытается (безуспешно) последовательно создать "A:", "A:\4", "A:\4\"
+			//Maximus: BUGBUG: игнорируется ошибка создания каталога!
 			if(!Exist && apiCreateDirectory(strPath, nullptr) && !Simple)
 				TreeList::AddTreeName(strPath);
 
