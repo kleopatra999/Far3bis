@@ -698,6 +698,10 @@ bool ShellSetFileAttributes(Panel *SrcPanel, const string* Object)
 		{
 			AttrDlg[SA_BUTTON_SET].Flags|=DIF_DISABLE;
 			AttrDlg[SA_BUTTON_SYSTEMDLG].Flags|=DIF_DISABLE;
+			#if 1
+			//Maximus: отображение владельца в плагиновых панел€х
+			AttrDlg[SA_EDIT_OWNER].Flags|=DIF_READONLY;
+			#endif
 			DlgParam.Plugin=true;
 		}
 	}
@@ -734,11 +738,20 @@ bool ShellSetFileAttributes(Panel *SrcPanel, const string* Object)
 	{
 		DWORD FileAttr=INVALID_FILE_ATTRIBUTES;
 		string strSelName;
+		#if 1
+		//Maximus: отображение владельца в плагиновых панел€х
+		string strSelOwner;
+		#endif
 		api::FAR_FIND_DATA FindData;
 		if(SrcPanel)
 		{
 			SrcPanel->GetSelName(nullptr,FileAttr);
+			#if 1
+			//Maximus: отображение владельца в плагиновых панел€х
+			SrcPanel->GetSelName(&strSelName,FileAttr,nullptr,&FindData,&strSelOwner);
+			#else
 			SrcPanel->GetSelName(&strSelName,FileAttr,nullptr,&FindData);
+			#endif
 		}
 		else
 		{
@@ -1070,7 +1083,19 @@ bool ShellSetFileAttributes(Panel *SrcPanel, const string* Object)
 				string strTemp;
 				CurPath2ComputerName(SrcPanel->GetCurDir(), strComputerName, strTemp);
 			}
+			#if 1
+			//Maximus: отображение владельца в плагиновых панел€х
+			if (DlgParam.Plugin)
+			{
+				AttrDlg[SA_EDIT_OWNER].strData=strSelOwner;
+			}
+			else
+			{
+				GetFileOwner(strComputerName,strSelName,AttrDlg[SA_EDIT_OWNER].strData);
+			}
+			#else
 			GetFileOwner(strComputerName,strSelName,AttrDlg[SA_EDIT_OWNER].strData);
+			#endif
 		}
 		else
 		{
@@ -1109,7 +1134,12 @@ bool ShellSetFileAttributes(Panel *SrcPanel, const string* Object)
 				CurPath2ComputerName(SrcPanel->GetCurDir(), strComputerName, strTemp);
 
 				bool CheckOwner=true;
+				#if 1
+				//Maximus: отображение владельца в плагиновых панел€х
+				while (SrcPanel->GetSelName(&strSelName,FileAttr,nullptr,&FindData,&strSelOwner))
+				#else
 				while (SrcPanel->GetSelName(&strSelName,FileAttr,nullptr,&FindData))
+				#endif
 				{
 					if (!FolderPresent&&(FileAttr&FILE_ATTRIBUTE_DIRECTORY))
 					{
@@ -1136,7 +1166,15 @@ bool ShellSetFileAttributes(Panel *SrcPanel, const string* Object)
 					if(CheckOwner)
 					{
 						string strCurOwner;
+						#if 1
+						//Maximus: отображение владельца в плагиновых панел€х
+						if (DlgParam.Plugin)
+							strCurOwner=strSelOwner;
+						else
+							GetFileOwner(strComputerName,strSelName,strCurOwner);
+						#else
 						GetFileOwner(strComputerName,strSelName,strCurOwner);
+						#endif
 						if(AttrDlg[SA_EDIT_OWNER].strData.empty())
 						{
 							AttrDlg[SA_EDIT_OWNER].strData=strCurOwner;
