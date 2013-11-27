@@ -235,6 +235,10 @@ class PluginManager
 
 		Plugin *GetPlugin(const wchar_t *lpwszModuleName);
 		Plugin *GetPlugin(size_t PluginNumber);
+		#if 1
+		//Maximus: для отлова багов
+		bool IsPluginValid(Plugin *pPlugin);
+		#endif
 
 		size_t GetPluginsCount() { return PluginsCount; }
 #ifndef NO_WRAPPER
