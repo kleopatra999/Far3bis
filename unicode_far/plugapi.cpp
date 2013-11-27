@@ -1264,6 +1264,15 @@ intptr_t WINAPI apiPanelControl(HANDLE hPlugin,FILE_CONTROL_COMMANDS Command,int
 	}
 	#endif
 
+	#if 1
+	//Maximus: проверка FrameManager
+	if ((!Global->OnlyEditorViewerUsed || Global->CtrlObject) && !Global->FrameManager)
+	{
+		_ASSERTE(FALSE && "FrameManager has invalid state");
+		return 0;
+	}
+	#endif
+
 	if (Global->OnlyEditorViewerUsed || !Global->CtrlObject || Global->FrameManager->ManagerIsDown())
 		return 0;
 
