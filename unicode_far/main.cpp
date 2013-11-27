@@ -336,6 +336,11 @@ int MainProcessSEH(string& strEditName,string& strViewName,string& DestName1,str
 	return Result;
 }
 
+#if 1
+//Maximus: для отладки
+DWORD gnMainThreadId = 0;
+#endif
+
 void InitProfile(string &strProfilePath, string strLocalProfilePath)
 {
 	if (!strProfilePath.IsEmpty())
@@ -436,6 +441,11 @@ int ExportImportMain(bool Export, const wchar_t *XML, const wchar_t *ProfilePath
 
 int _cdecl wmain(int Argc, wchar_t *Argv[])
 {
+	#if 1
+	//Maximus: для отладки
+	gnMainThreadId = GetCurrentThreadId();
+	#endif
+
 	ErrorMode=SEM_FAILCRITICALERRORS|SEM_NOOPENFILEERRORBOX;
 	SetErrorMode(ErrorMode);
 
