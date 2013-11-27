@@ -1514,6 +1514,9 @@ enum EDITOR_CONTROL_COMMANDS
 #endif // END FAR_USE_INTERNALS
 	ECTL_SUBSCRIBECHANGEEVENT       = 36,
 	ECTL_UNSUBSCRIBECHANGEEVENT     = 37,
+
+	//Maximus. Требуется для "прозрачного" заворота строк (declined in official)
+	ECTL_DROPMODIFEDFLAG            = 999,
 };
 
 enum EDITOR_SETPARAMETER_TYPES
