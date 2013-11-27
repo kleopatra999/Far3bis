@@ -64,6 +64,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FarGuid.hpp"
 #include "configdb.hpp"
 #include "FarDlgBuilder.hpp"
+#include "DlgGuid.hpp"
 
 static const wchar_t *PluginsFolderName=L"Plugins";
 
@@ -1438,6 +1439,7 @@ void PluginManager::Configure(int StartPos)
 		VMenu PluginList(MSG(MPluginConfigTitle),nullptr,0,ScrY-4);
 		PluginList.SetFlags(VMENU_WRAPMODE);
 		PluginList.SetHelp(L"PluginsConfig");
+		PluginList.SetId(PluginsConfigId);
 
 		for (;;)
 		{
@@ -1617,6 +1619,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 		VMenu PluginList(MSG(MPluginCommandsMenuTitle),nullptr,0,ScrY-4);
 		PluginList.SetFlags(VMENU_WRAPMODE);
 		PluginList.SetHelp(L"PluginCommands");
+		PluginList.SetId(PluginsMenuId);
 		bool NeedUpdateItems = true;
 		bool Done = false;
 
