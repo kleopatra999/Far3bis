@@ -542,6 +542,8 @@ bool File::NtQueryDirectoryFile(PVOID FileInformation, ULONG Length, FILE_INFORM
 	di->NextEntryOffset = 0xffffffffUL;
 
 	NTSTATUS Result = Imports().NtQueryDirectoryFile(Handle, nullptr, nullptr, nullptr, &IoStatusBlock, FileInformation, Length, FileInformationClass, ReturnSingleEntry, pNameString, RestartScan);
+	//Maximus: для отладки
+	_ASSERTE(Result!=STATUS_DATATYPE_MISALIGNMENT);
 	SetLastError(Imports().RtlNtStatusToDosError(Result));
 	if(Status)
 	{
@@ -555,6 +557,8 @@ bool File::NtQueryInformationFile(PVOID FileInformation, ULONG Length, FILE_INFO
 {
 	IO_STATUS_BLOCK IoStatusBlock;
 	NTSTATUS Result = Imports().NtQueryInformationFile(Handle, &IoStatusBlock, FileInformation, Length, FileInformationClass);
+	//Maximus: для отладки
+	_ASSERTE(Result!=STATUS_DATATYPE_MISALIGNMENT);
 	SetLastError(Imports().RtlNtStatusToDosError(Result));
 	if(Status)
 	{
