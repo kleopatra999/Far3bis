@@ -723,7 +723,12 @@ bool Plugin::Load()
 	return true;
 }
 
+#if 1
+//Maximus: отображение ошибок загрузки
+bool Plugin::LoadFromCache(const api::FAR_FIND_DATA &FindData, bool* ShowErrors)
+#else
 bool Plugin::LoadFromCache(const api::FAR_FIND_DATA &FindData)
+#endif
 {
 	PluginsCacheConfig& PlCache = *Global->Db->PlCacheCfg();
 
@@ -748,7 +753,20 @@ bool Plugin::LoadFromCache(const api::FAR_FIND_DATA &FindData)
 			string strPluginID = PlCache.GetSignature(id);
 
 			if (strPluginID != strCurPluginID)   //одинаковые ли бинарники?
+			#if 1
+			//Maximus: отображение ошибок загрузки
+			{
+				if (ShowErrors && *ShowErrors)
+				{
+					const wchar_t* const Items[] = {MSG(MPlgBinaryNotMatchError), m_strCacheName.c_str(), MSG(MOk), MSG(MHSkipErrors)};
+					if (Message(MSG_WARNING|MSG_NOPLUGINS, 2, MSG(MError), Items, ARRAYSIZE(Items), L"ErrLoadPlugin")==1)
+						*ShowErrors=false;
+				}
+					return false; // tabbed, just forcing diff
+			}
+			#else
 				return false;
+			#endif
 		}
 
 		if (!PlCache.GetMinFarVersion(id, &MinFarVersion))
@@ -773,6 +791,16 @@ bool Plugin::LoadFromCache(const api::FAR_FIND_DATA &FindData)
 		WorkFlags.Set(PIWF_CACHED); //too much "cached" flags
 		return true;
 	}
+	#if 1
+	//Maximus: отображение ошибок загрузки
+	else if (ShowErrors && *ShowErrors)
+	{
+		const wchar_t* const Items[] = {MSG(MPlgCacheItemNotFoundError), m_strCacheName.c_str(), MSG(MOk), MSG(MHSkipErrors)};
+		if (Message(MSG_WARNING|MSG_NOPLUGINS, 2, MSG(MError), Items, ARRAYSIZE(Items), L"ErrLoadPlugin")==1)
+			*ShowErrors=false;
+	}
+	#endif
+
 	return false;
 }
 
