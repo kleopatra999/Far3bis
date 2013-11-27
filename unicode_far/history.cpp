@@ -51,6 +51,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "DlgGuid.hpp"
 #include "scrbuf.hpp"
 #include "plugins.hpp"
+#include "elevation.hpp"
+#include "pathmix.hpp"
 
 History::History(enumHISTORYTYPE TypeHistory, const string& HistoryName, const BoolOption& EnableSave, bool SaveType):
 	strHistoryName(HistoryName),
@@ -523,8 +525,37 @@ int History::ProcessMenu(string &strStr, GUID* Guid, string *pstrFile, string *p
 				return -1;
 
 			//BUGUBUG: eliminate those magic numbers!
+			#if 1
+			//Maximus: для сетевых ресурсов - танцы с бубном
+			if (Global->Opt->RemoteAutoLogin
+				&& SelectedRecordType != 2 && SelectedRecordType != 3 // ignore external
+				&& RetCode != 3 && ((TypeHistory == HISTORYTYPE_FOLDER && strSelectedRecordGuid.empty()) || TypeHistory == HISTORYTYPE_VIEW))
+			{
+				size_t DirOffset = 0;
+				PATH_TYPE Type = ParsePath(strSelectedRecordName, &DirOffset);
+				string strCopy = DirOffset ? strSelectedRecordName.substr(0, DirOffset) : strSelectedRecordName.data();
+				if (Type == PATH_REMOTE /*|| Type == PATH_REMOTEUNC*/)
+				{
+					DisableElevation de;
+					if (api::GetFileAttributes(strSelectedRecordName) == INVALID_FILE_ATTRIBUTES)
+					{
+						FarMacroValue vParams[2]={{FMVT_STRING},{FMVT_STRING}};
+						vParams[0].String=L"connect";
+						vParams[1].String=strCopy.data();
+						OpenMacroInfo info={sizeof(OpenMacroInfo),2,vParams};
+						void* CallResult = nullptr; //we must pass (&CallResult) to avoid memory leak
+						Global->CtrlObject->Plugins->CallPlugin(Global->Opt->KnownIDs.Network, OPEN_FROMMACRO, &info, &CallResult);
+						//CallResult==1 on succeess?
+					}
+				}
+			}
+			//Maximus: поплясали - теперь как обычно
 			if (SelectedRecordType != 2 && SelectedRecordType != 3 // ignore external
 				&& RetCode != 3 && ((TypeHistory == HISTORYTYPE_FOLDER && strSelectedRecordGuid.empty()) || TypeHistory == HISTORYTYPE_VIEW) && api::GetFileAttributes(strSelectedRecordName) == INVALID_FILE_ATTRIBUTES)
+			#else
+			if (SelectedRecordType != 2 && SelectedRecordType != 3 // ignore external
+				&& RetCode != 3 && ((TypeHistory == HISTORYTYPE_FOLDER && strSelectedRecordGuid.empty()) || TypeHistory == HISTORYTYPE_VIEW) && api::GetFileAttributes(strSelectedRecordName) == INVALID_FILE_ATTRIBUTES)
+			#endif
 			{
 				SetLastError(ERROR_FILE_NOT_FOUND);
 				Global->CatchError();
