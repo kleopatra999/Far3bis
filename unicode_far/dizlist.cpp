@@ -47,6 +47,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "filestr.hpp"
 #include "codepage.hpp"
 #include "cache.hpp"
+#if 1
+//Maximus: не вызывать elevation дл€ попытки установки атрибута
+#include "elevation.hpp"
+#endif
 
 DizList::DizList():
 	Modified(false),
@@ -307,6 +311,11 @@ bool DizList::Flush(const string& Path,const string* DizName)
 
 		if(!(FileAttr&FILE_ATTRIBUTE_READONLY))
 		{
+			#if 1
+			//Maximus5: Ќа некоторых сетевых устройствах атрибуты вообще не устанавливаютс€
+			// ѕоэтому возвращаетс€ ошибка, и производитс€ попытка Elevation (что бессмысленно)
+			DisableElevation DE;
+			#endif
 			api::SetFileAttributes(strDizFileName,FILE_ATTRIBUTE_ARCHIVE);
 		}
 		else
@@ -396,6 +405,11 @@ bool DizList::Flush(const string& Path,const string* DizName)
 		{
 			FileAttr=FILE_ATTRIBUTE_ARCHIVE|(Global->Opt->Diz.SetHidden?FILE_ATTRIBUTE_HIDDEN:0);
 		}
+		#if 1
+		//Maximus5: Ќа некоторых сетевых устройствах атрибуты вообще не устанавливаютс€
+		// ѕоэтому возвращаетс€ ошибка, и производитс€ попытка Elevation (что бессмысленно)
+		DisableElevation DE;
+		#endif
 		api::SetFileAttributes(strDizFileName,FileAttr);
 	}
 	else
