@@ -546,6 +546,8 @@ bool api::File::NtQueryDirectoryFile(PVOID FileInformation, ULONG Length, FILE_I
 	di->NextEntryOffset = 0xffffffffUL;
 
 	NTSTATUS Result = Global->ifn->NtQueryDirectoryFile(Handle, nullptr, nullptr, nullptr, &IoStatusBlock, FileInformation, Length, FileInformationClass, ReturnSingleEntry, pNameString, RestartScan);
+	//Maximus: для отладки
+	_ASSERTE(Result!=STATUS_DATATYPE_MISALIGNMENT);
 	SetLastError(Global->ifn->RtlNtStatusToDosError(Result));
 	if(Status)
 	{
@@ -559,6 +561,8 @@ bool api::File::NtQueryInformationFile(PVOID FileInformation, ULONG Length, FILE
 {
 	IO_STATUS_BLOCK IoStatusBlock;
 	NTSTATUS Result = Global->ifn->NtQueryInformationFile(Handle, &IoStatusBlock, FileInformation, Length, FileInformationClass);
+	//Maximus: для отладки
+	_ASSERTE(Result!=STATUS_DATATYPE_MISALIGNMENT);
 	SetLastError(Global->ifn->RtlNtStatusToDosError(Result));
 	if(Status)
 	{
