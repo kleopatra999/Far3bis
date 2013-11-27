@@ -212,6 +212,11 @@ class PluginManager
 		void SetFlags(DWORD NewFlags) { Flags.Set(NewFlags); }
 		void SkipFlags(DWORD NewFlags) { Flags.Clear(NewFlags); }
 
+		#if 1
+		//Maximus: расширенное меню плагинов		
+		void GetPluginVersion(LPCTSTR ModuleName,string &strModuleVer);
+		#endif
+
 	public:
 
 		PluginManager();
