@@ -92,6 +92,7 @@ void History::CompactHistory()
 */
 void History::AddToHistory(const string& Str, int Type, const GUID* Guid, const wchar_t *File, const wchar_t *Data, bool SaveForbid)
 {
+	_ASSERTE(this!=NULL);
 	if (!EnableAdd || SaveForbid)
 		return;
 
@@ -143,6 +144,7 @@ void History::AddToHistory(const string& Str, int Type, const GUID* Guid, const 
 
 bool History::ReadLastItem(const string& HistoryName, string &strStr)
 {
+	_ASSERTE(this!=NULL);
 	strStr.clear();
 	return HistoryCfgRef()->GetNewest(HISTORYTYPE_DIALOG, HistoryName, strStr);
 }
