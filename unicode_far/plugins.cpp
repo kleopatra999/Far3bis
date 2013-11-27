@@ -1318,8 +1318,18 @@ void PluginManager::Configure(int StartPos)
 
 						GetPluginHotKey(pPlugin,guid,PluginsHotkeysConfig::CONFIG_MENU,strHotKey);
 						MenuItemEx ListItem;
+						#if 1
+						//Maximus: показ Far2Wrapper
+						if (pPlugin->IsFar2Plugin())
+							ListItem.Flags=LIF_CHECKED|L'2';
+						#endif
 #ifndef NO_WRAPPER
+						#if 1
+						//Maximus
+						else if (pPlugin->IsOemPlugin())
+						#else
 						if (pPlugin->IsOemPlugin())
+						#endif
 							ListItem.Flags=LIF_CHECKED|L'A';
 #endif // NO_WRAPPER
 						if (!HotKeysPresent)
@@ -1500,8 +1510,18 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 
 						GetPluginHotKey(pPlugin,guid,PluginsHotkeysConfig::PLUGINS_MENU,strHotKey);
 						MenuItemEx ListItem;
+						#if 1
+						//Maximus: показ Far2Wrapper
+						if (pPlugin->IsFar2Plugin())
+							ListItem.Flags=LIF_CHECKED|L'2';
+						#endif
 #ifndef NO_WRAPPER
+						#if 1
+						//Maximus
+						else if (pPlugin->IsOemPlugin())
+						#else
 						if (pPlugin->IsOemPlugin())
+						#endif
 							ListItem.Flags=LIF_CHECKED|L'A';
 #endif // NO_WRAPPER
 						if (!HotKeysPresent)
@@ -1915,6 +1935,14 @@ size_t PluginManager::GetPluginInformation(Plugin *pPlugin, FarGetPluginInformat
 	{
 		pInfo->Flags |= FPF_LOADED;
 	}
+
+	#if 1
+	//Maximus: поддержка Far2Wrapper
+	if (pPlugin->IsFar2Plugin())
+	{
+		pInfo->Flags |= FPF_FAR2;
+	}
+	#endif
 #ifndef NO_WRAPPER
 	if (pPlugin->IsOemPlugin())
 	{
