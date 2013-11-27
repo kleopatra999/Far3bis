@@ -148,6 +148,25 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # define __except(a) if(false)
 #endif // __GNUC__
 
+
+//Maximus: дл€ отладки
+#ifdef _DEBUG
+	#ifndef _CRT_WIDE
+	#define __CRT_WIDE(_String) L ## _String
+	#define _CRT_WIDE(_String) __CRT_WIDE(_String)
+	#endif
+	#define MY_ASSERT_EXPR(expr, msg) \
+		if (!(expr)) { \
+			if (MessageBox(NULL,msg,L"Assertion",MB_RETRYCANCEL|MB_SYSTEMMODAL)==IDRETRY) \
+				DebugBreak(); \
+		}
+	#define _ASSERTE(x)  MY_ASSERT_EXPR((x), _CRT_WIDE(#x))
+#else
+	#define _ASSERTE(x)
+#endif
+
+
+
 #define NullToEmpty(s) (s?s:L"")
 
 template <class T>
@@ -191,8 +210,14 @@ enum LNGID:int;
 #define nullptr NULL
 #endif
 
+#if 1
+//Maxmus: ƒл€ отлова ошибок - кидаем ассерты. ѕока StructSize на равенство, а там посмотрим
+template <typename T>
+bool CheckStructSize(const T* s) {_ASSERTE(!s || (s->StructSize==sizeof(*s))); return s && (s->StructSize >= sizeof(T));}
+#else
 template <typename T>
 bool CheckStructSize(const T* s) {return s && (s->StructSize >= sizeof(T));}
+#endif
 
 
 #include "noncopyable.hpp"
