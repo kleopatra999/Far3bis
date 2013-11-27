@@ -3601,7 +3601,12 @@ size_t FileList::GetRealSelCount()
 }
 
 
+#if 1
+//Maximus: отображение владельца с плагиновых панелей
+int FileList::GetSelName(string *strName,DWORD &FileAttr,string *strShortName,FAR_FIND_DATA_EX *fde,string *strOwner)
+#else
 int FileList::GetSelName(string *strName,DWORD &FileAttr,string *strShortName,FAR_FIND_DATA_EX *fde)
+#endif
 {
 	if (!strName)
 	{
@@ -3616,6 +3621,11 @@ int FileList::GetSelName(string *strName,DWORD &FileAttr,string *strShortName,FA
 		{
 			GetSelPosition=1;
 			*strName = ListData[CurFile]->strName;
+			#if 1
+			//Maximus: отображение владельца с плагиновых панелей
+			if (strOwner)
+				*strOwner = ListData[CurFile]->strOwner;
+			#endif
 
 			if (strShortName)
 			{
@@ -3651,6 +3661,11 @@ int FileList::GetSelName(string *strName,DWORD &FileAttr,string *strShortName,FA
 		if (ListData[GetSelPosition++]->Selected)
 		{
 			*strName = ListData[GetSelPosition-1]->strName;
+			#if 1
+			//Maximus: отображение владельца с плагиновых панелей
+			if (strOwner)
+				*strOwner = ListData[GetSelPosition-1]->strOwner;
+			#endif
 
 			if (strShortName)
 			{

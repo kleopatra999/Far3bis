@@ -256,7 +256,12 @@ class FileList:public Panel
 
 		void MoveSelection(FileListItem **FileList,long FileCount,FileListItem **OldList,long OldFileCount);
 		virtual size_t GetSelCount();
+		#if 1
+		//Maximus: отображение владельца с плагиновых панелей
+		virtual int GetSelName(string *strName,DWORD &FileAttr,string *strShortName=nullptr,FAR_FIND_DATA_EX *fde=nullptr,string *strOwner=nullptr);
+		#else
 		virtual int GetSelName(string *strName,DWORD &FileAttr,string *strShortName=nullptr,FAR_FIND_DATA_EX *fde=nullptr);
+		#endif
 		virtual void UngetSelName();
 		virtual void ClearLastGetSelection();
 

@@ -1655,7 +1655,12 @@ size_t TreeList::GetSelCount()
 }
 
 
+#if 1
+//Maximus: Отображение владельцев с плагиновых панелей
+int TreeList::GetSelName(string *strName,DWORD &FileAttr,string *strShortName,FAR_FIND_DATA_EX *fd,string *strOwner)
+#else
 int TreeList::GetSelName(string *strName,DWORD &FileAttr,string *strShortName,FAR_FIND_DATA_EX *fd)
+#endif
 {
 	if (!strName)
 	{
@@ -1669,6 +1674,12 @@ int TreeList::GetSelName(string *strName,DWORD &FileAttr,string *strShortName,FA
 
 		if (strShortName )
 			*strShortName = *strName;
+
+		#if 1
+		//Maximus: Отображение владельцев с плагиновых панелей
+		if (strOwner)
+			strOwner->Clear();
+		#endif
 
 		FileAttr=FILE_ATTRIBUTE_DIRECTORY;
 		GetSelPosition++;
