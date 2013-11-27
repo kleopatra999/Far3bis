@@ -3429,6 +3429,7 @@ void Editor::InsertString()
 
 		CurLine->SetBinaryString(NewCurLineStr,StrSize);
 		xf_free(NewCurLineStr);
+		//Maximus: BUGBUG: softbreaks: нужно проверить
 		Change(ECTYPE_CHANGED,NumLine);
 	}
 	else
@@ -3447,6 +3448,7 @@ void Editor::InsertString()
 		NewString->SetEOL(EndSeq);
 	}
 
+	//Maximus: BUGBUG: softbreaks: нужно проверить
 	Change(ECTYPE_CHANGED,NumLine+1);
 
 	if (VBlockStart && NumLine<VBlockY+VBlockSizeY)
@@ -4270,7 +4272,7 @@ void Editor::Paste(const wchar_t *Src)
 				EdOpt.AutoIndent=FALSE;
 				Edit *PrevLine=CurLine;
 				ProcessKey(KEY_ENTER);
-				//_ASSERTE(PrevLine!=CurLine);
+				_ASSERTE(PrevLine!=CurLine);
 				wchar_t ClipEol[4] = {ClipText[I]};
 				if (ClipText[I]==L'\r' && ClipText[I+1]==L'\n')
 				{
@@ -6363,6 +6365,11 @@ int Editor::EditorControl(int Command,void *Param)
 			}
 
 			return FALSE;
+		}
+		case ECTL_DROPMODIFEDFLAG:
+		{
+			Flags.Clear(FEDITOR_MODIFIED);
+			return TRUE;
 		}
 	}
 
