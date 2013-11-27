@@ -110,6 +110,10 @@ bool PluginSynchro::Process()
 				Info.Event = SE_COMMONSYNCHRO;
 				Info.Param = param;
 
+				#ifdef _DEBUG
+				//Maximus: вроде должно быть исправлено, проверим
+				_ASSERTE(Global->CtrlObject->Plugins->IsPluginValid(pPlugin));
+				#endif
 				pPlugin->ProcessSynchroEvent(&Info);
 				res=true;
 			}
