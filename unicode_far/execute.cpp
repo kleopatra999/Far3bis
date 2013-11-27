@@ -596,7 +596,27 @@ static const wchar_t *GetShellAction(const string& FileName,DWORD& ImageSubsyste
 					strNewValue.resize(pos);
 			}
 
+			#if 1
+			//Maximus: в случае плохого пути - explorer предлагает "OpenAs", а фар просто обламывается
+			if (!GetImageSubsystem(strNewValue,ImageSubsystem))
+			{
+				if (strAction == L"open")
+				{
+					if (strNewValue != L"%1")
+					{
+						strAction = L"openas";
+						RetPtr = strAction.data();
+					}
+				}
+				else
+				{
+					Error=ERROR_NO_ASSOCIATION;
+					RetPtr=nullptr;
+				}
+			}
+			#else
 			GetImageSubsystem(strNewValue,ImageSubsystem);
+			#endif
 		}
 		else
 		{
