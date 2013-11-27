@@ -1228,6 +1228,15 @@ intptr_t WINAPI apiPanelControl(HANDLE hPlugin,FILE_CONTROL_COMMANDS Command,int
 		}
 	}
 	#endif
+	
+	#if 1
+	//Maximus: проверка FrameManager
+	if ((!Opt.OnlyEditorViewerUsed || CtrlObject) && !FrameManager)
+	{
+		_ASSERTE((!Opt.OnlyEditorViewerUsed || CtrlObject) && !FrameManager);
+		return 0;
+	}
+	#endif
 
 	if (Opt.OnlyEditorViewerUsed || !CtrlObject || FrameManager->ManagerIsDown())
 		return 0;
