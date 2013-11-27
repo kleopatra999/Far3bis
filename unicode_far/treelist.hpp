@@ -193,7 +193,12 @@ public:
 	virtual TreeItem* GetItem(size_t Index) const override;
 	virtual int GetCurrentPos() const override;
 
+	#if 1
+	//Maximus: Отображение владельцев с плагиновых панелей
+	virtual int GetSelName(string *strName,DWORD &FileAttr,string *ShortName=nullptr,api::FAR_FIND_DATA *fd=nullptr,string *strOwner=nullptr) override;
+	#else
 	virtual int GetSelName(string *strName,DWORD &FileAttr,string *ShortName=nullptr,api::FAR_FIND_DATA *fd=nullptr) override;
+	#endif
 
 	static void AddTreeName(const string& Name);
 	static void DelTreeName(const string& Name);
