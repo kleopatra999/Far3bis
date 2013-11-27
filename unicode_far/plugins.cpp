@@ -296,13 +296,24 @@ PluginTree::~PluginTree()
 
 long PluginTree::compare(Node<AncientPlugin*>* first,AncientPlugin** second)
 {
+#ifdef _DEBUG
+	//Maximus: для отладки
+	AncientPlugin** p1 = first->data;
+	_ASSERTE(*p1!=(AncientPlugin*)0xcccccccc);
+	const GUID& guid1 = (*p1)->GetGUID();
+	const GUID& guid2 = (*second)->GetGUID();
+	return memcmp(&guid1,&guid2,sizeof(GUID));
+#else
 	return memcmp(&((*(first->data))->GetGUID()),&((*second)->GetGUID()),sizeof(GUID));
+#endif
 }
 
 AncientPlugin** PluginTree::query(const GUID& value)
 {
 	PluginSearch plugin(value);
 	AncientPlugin* get=&plugin;
+	//Maximus: для отладки
+	_ASSERTE(root==NULL || *root->data!=(AncientPlugin*)0xcccccccc);
 	return Tree<AncientPlugin*>::query(&get);
 }
 
@@ -355,9 +366,23 @@ bool PluginManager::AddPlugin(Plugin *pPlugin)
 {
 	if (PluginsCache)
 	{
+		#if 1
+		//Maximus: для отладки
+		AncientPlugin** tmp=new AncientPlugin*(pPlugin);
+		_ASSERTE(*tmp==pPlugin);
+		AncientPlugin** item=PluginsCache->insert(tmp);
+		if(*item!=pPlugin)
+		{
+			// Если попали сюда - значит плагин с таким GUID уже есть в кеше
+			// После возврата false "новая" копия плагина будет выгружена
+			_ASSERTE(*item==pPlugin);
+			return false;
+		}
+		#else
 		AncientPlugin** item=new AncientPlugin*(pPlugin);
 		item=PluginsCache->insert(item);
 		if(*item!=pPlugin) return false;
+		#endif
 	}
 	Plugin **NewPluginsData=(Plugin**)xf_realloc(PluginsData,sizeof(*PluginsData)*(PluginsCount+1));
 
@@ -419,35 +444,138 @@ bool PluginManager::RemovePlugin(Plugin *pPlugin)
 Plugin* PluginManager::LoadPlugin(
     const string& lpwszModuleName,
     const FAR_FIND_DATA_EX &FindData,
-    bool LoadToMem
+    bool LoadToMem,
+	bool* ShowErrors, bool Manual //Maximus: диагностика ошибок загрузки
 )
 {
+	#if 1
+	//Maximus: не выполнять лишние действия
+	Plugin *pPlugin = GetPlugin(lpwszModuleName);
+	if (pPlugin)
+	{
+		// Значит плагин почему-то оказался уже загружен
+		// Это может быть, например, если в ключе "/p" указано несколько пересекающихся папок
+		// Или плагин был загружен из другого плагина (AdvCmd2->VisComp)
+		//-- Не будем ругаться, если регистры различаются, а то достало
+		_ASSERTE(("Plugin was already loaded!" && 0) || pPlugin->GetModuleName()!=lpwszModuleName);
+		return pPlugin;
+	}
+	#else
 	Plugin *pPlugin = nullptr;
+	#endif
 
+	#if 1
+	//Maximus: Тип нам пригодится дальше
+	PluginType Type=IsModulePlugin(lpwszModuleName);
+	switch (Type)
+	#else
 	switch (IsModulePlugin(lpwszModuleName))
+	#endif
 	{
 		case UNICODE_PLUGIN: pPlugin = new Plugin(this, lpwszModuleName); break;
 #ifndef NO_WRAPPER
 		case OEM_PLUGIN: pPlugin = new wrapper::PluginA(this, lpwszModuleName); break;
 #endif // NO_WRAPPER
+		#if 1
+		//Maximus: диагностика ошибок загрузки
+		default:
+			if (Manual && ShowErrors && *ShowErrors)
+			{
+				SetMessageHelp(L"ErrLoadPlugin");
+				if (Message(MSG_WARNING|MSG_NOPLUGINS,2,MSG(MError),MSG(MPlgUnsupportedError),lpwszModuleName,MSG(MOk),MSG(MHSkipErrors))==1)
+					*ShowErrors=false;
+			}
+			return nullptr;
+		#else
 		default: return nullptr;
+		#endif
 	}
 
 	if (!pPlugin)
+	{
+		//Maximus: для отладки
+		_ASSERTE(pPlugin!=nullptr);
 		return nullptr;
+	}
 
 	bool bResult=false,bDataLoaded=false;
+	#if 1
+	//Maximus: диагностика ошибок загрузки
+	bool bAlwaysLoad=(!Opt.LoadPlug.PluginsCacheOnly || Manual);
+	#endif
 
 	if (!LoadToMem)
+		#if 1
+		//Maximus: диагностика ошибок загрузки
+		bResult = pPlugin->LoadFromCache(FindData, bAlwaysLoad?nullptr:ShowErrors);
+		#else
 		bResult = pPlugin->LoadFromCache(FindData);
+		#endif
 
+	#if 1
+	//Maximus: диагностика ошибок загрузки
+	if (!bResult && (pPlugin->CheckWorkFlags(PIWF_PRELOADED) || bAlwaysLoad))
+	#else
 	if (!bResult && (pPlugin->CheckWorkFlags(PIWF_PRELOADED) || !Opt.LoadPlug.PluginsCacheOnly))
+	#endif
 	{
 		bResult = bDataLoaded = pPlugin->LoadData();
 	}
+#ifdef _DEBUG
+	//Maximus: диагностика ошибок загрузки
+	else if (IsDebuggerPresent())
+	{
+		string strDbgInfo=lpwszModuleName + L" - skipped, (!bResult && (pPlugin->CheckWorkFlags(PIWF_PRELOADED) || !Opt.LoadPlug.PluginsCacheOnly || Manual))\n";
+		OutputDebugString(strDbgInfo);
+	}
+#endif
 
+	//Maximus: Загрузка двух плагинов (разные физические файлы) с одинаковыми GUID недопустима
+	if (bResult)
+	{
+		GUID PluginGuid=pPlugin->GetGUID();
+		_ASSERTE(memcmp(&PluginGuid, &FarGuid, sizeof(PluginGuid))!=0 || Type!=UNICODE_PLUGIN);
+		if (memcmp(&PluginGuid, &FarGuid, sizeof(PluginGuid))!=0)
+		{
+			Plugin *pExist=FindPlugin(PluginGuid);
+			if (pExist)
+			{
+				if (Manual)
+				{
+					SetMessageHelp(L"ErrLoadPlugin");
+					Message(MSG_WARNING|MSG_NOPLUGINS,1,MSG(MError),MSG(MPlgDuplacateGuidError),pExist->GetModuleName(),lpwszModuleName,MSG(MOk));
+				}
+#ifdef _DEBUG
+				else if (IsDebuggerPresent())
+				{
+					string strDbgInfo=lpwszModuleName + L", " + pExist->GetModuleName() + L" - Same guid, unloaded\n";
+					OutputDebugString(strDbgInfo);
+				}
+#endif
+				pPlugin->Unload(true);
+				delete pPlugin;
+				return false;
+			}
+		}
+	}
+
+	//Maximus: BUGBUG: AddPlugin Обламывается и никаких ошибок не показывает!!!
 	if (bResult && !AddPlugin(pPlugin))
 	{
+		//Maximus: диагностика ошибок загрузки
+		_ASSERTE((void*)L"AddPlugin failed"==NULL);
+		if (Manual)
+		{
+			SetMessageHelp(L"ErrLoadPlugin");
+			Message(MSG_WARNING|MSG_NOPLUGINS,1,MSG(MError),MSG(MPlgRegisterError),lpwszModuleName,MSG(MOk));
+		}
+#ifdef _DEBUG
+		else if (IsDebuggerPresent())
+		{
+			string strDbgInfo=lpwszModuleName + L" - AddPlugin failed\n";
+			OutputDebugString(strDbgInfo);
+		}
+#endif
 		pPlugin->Unload(true);
 		delete pPlugin;
 		return nullptr;
@@ -461,7 +589,12 @@ Plugin* PluginManager::LoadPlugin(
 	return pPlugin;
 }
 
+#if 1
+//Maximus: диагностика ошибок загрузки
+HANDLE PluginManager::LoadPluginExternal(const string& lpwszModuleName, bool LoadToMem, bool Manual)
+#else
 HANDLE PluginManager::LoadPluginExternal(const string& lpwszModuleName, bool LoadToMem)
+#endif
 {
 	Plugin *pPlugin = GetPlugin(lpwszModuleName);
 
@@ -479,7 +612,13 @@ HANDLE PluginManager::LoadPluginExternal(const string& lpwszModuleName, bool Loa
 
 		if (apiGetFindDataEx(lpwszModuleName, FindData))
 		{
+			#if 1
+			//Maximus: диагностика ошибок загрузки
+			bool ShowErrors=Manual;
+			pPlugin = LoadPlugin(lpwszModuleName, FindData, LoadToMem, &ShowErrors, Manual);
+			#else
 			pPlugin = LoadPlugin(lpwszModuleName, FindData, LoadToMem);
+			#endif
 			if (!pPlugin)
 				return nullptr;
 			far_qsort(PluginsData, PluginsCount, sizeof(*PluginsData), PluginsSort);
@@ -691,14 +830,58 @@ void PluginManager::LoadPluginsFromCache()
 {
 	string strModuleName;
 
+#ifdef _DEBUG
+	//Maximus: Для отладки
+	string strTest;
+	DWORD nInitialCount = 0;
+	OutputDebugString(L"PluginManager::LoadPluginsFromCache.Initial\n");
+	while (PlCacheCfg->EnumPlugins(nInitialCount, strModuleName))
+	{
+		strTest.Format(L"%3i: %s\n", nInitialCount, (LPCWSTR)strModuleName);
+		OutputDebugString(strTest);
+		nInitialCount++;
+	}
+	string strPrevModuleName;
+	OutputDebugString(L"PluginManager::LoadPluginsFromCache.Loading\n");
+#endif
+
+#if 1
+	//Maximus: отображение ошибок загрузки
+	bool ShowErrors=true;
+#endif
+
 	for (DWORD i=0; PlCacheCfg->EnumPlugins(i, strModuleName); i++)
 	{
+		#ifdef _DEBUG
+		//Maximus: для отладки
+		strTest.Format(L"%3i: %s\n", i, (LPCWSTR)strModuleName);
+		OutputDebugString(strTest);
+		_ASSERTE(wcscmp(strPrevModuleName, strModuleName)!=0);
+		strPrevModuleName = strModuleName;
+		unsigned __int64 id = PlCacheCfg->GetCacheID(strModuleName);
+		bool bPreload = PlCacheCfg->IsPreload(id);
+		string guid = PlCacheCfg->GetGuid(id);
+		string title = PlCacheCfg->GetTitle(id);
+		_ASSERTE(bPreload || !guid.IsEmpty());
+		#endif
+
 		ReplaceSlashToBSlash(strModuleName);
 
+		#ifdef _DEBUG
+		//Maximus: для отладки
+		Plugin *pExist = GetPlugin(strModuleName);
+		// может различаться регистром, в кеше может быть ДВА и более одинаковых элементов
+		_ASSERTE(pExist==nullptr || pExist->GetModuleName()!=strModuleName);
+		#endif
 		FAR_FIND_DATA_EX FindData;
 
 		if (apiGetFindDataEx(strModuleName, FindData))
+			#if 1
+			//Maximus: отображение ошибок загрузки
+			LoadPlugin(strModuleName, FindData, false, &ShowErrors);
+			#else
 			LoadPlugin(strModuleName, FindData, false);
+			#endif
 	}
 }
 

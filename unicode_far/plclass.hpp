@@ -259,7 +259,12 @@ public:
 	bool Load();
 	int Unload(bool bExitFAR = false);
 	bool LoadData();
+	#if 1
+	//Maximus: отображение ошибок загрузки
+	bool LoadFromCache(const FAR_FIND_DATA_EX &FindData, bool* ShowErrors=nullptr);
+	#else
 	bool LoadFromCache(const FAR_FIND_DATA_EX &FindData);
+	#endif
 	bool SaveToCache();
 	bool IsPanelPlugin();
 	bool Active() {return Activity != 0;}

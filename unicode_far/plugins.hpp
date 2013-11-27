@@ -200,7 +200,12 @@ class PluginManager
 		bool TestPluginInfo(Plugin *Item,PluginInfo *Info);
 		bool TestOPENPANELINFO(Plugin *Item,OpenPanelInfo *Info);
 
+		#if 1
+		//Maximus: отображение ошибок загрузки плагинов
+		Plugin* LoadPlugin(const string& lpwszModuleName, const FAR_FIND_DATA_EX &FindData, bool LoadToMem, bool* ShowErrors=nullptr, bool Manual=false);
+		#else
 		Plugin* LoadPlugin(const string& lpwszModuleName, const FAR_FIND_DATA_EX &FindData, bool LoadToMem);
+		#endif
 
 		bool AddPlugin(Plugin *pPlugin);
 		bool RemovePlugin(Plugin *pPlugin);
@@ -227,7 +232,12 @@ class PluginManager
 
 		int UnloadPlugin(Plugin *pPlugin, DWORD dwException);
 
+		#if 1
+		//Maximus: отображение ошибок загрузки плагинов
+		HANDLE LoadPluginExternal(const string& lpwszModuleName, bool LoadToMem, bool Manual=false);
+		#else
 		HANDLE LoadPluginExternal(const string& lpwszModuleName, bool LoadToMem);
+		#endif
 		int UnloadPluginExternal(HANDLE hPlugin);
 		bool IsPluginUnloaded(Plugin* pPlugin);
 

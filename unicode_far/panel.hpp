@@ -183,7 +183,12 @@ class Panel:public ScreenObject
 
 		virtual size_t GetSelCount() {return 0;}
 		virtual size_t GetRealSelCount() {return 0;}
+		#if 1
+		//Maximus: отображение владельцев с плагиновых панелей
+		virtual int GetSelName(string *strName,DWORD &FileAttr,string *ShortName=nullptr,FAR_FIND_DATA_EX *fd=nullptr,string *strOwner=nullptr) {return FALSE;}
+		#else
 		virtual int GetSelName(string *strName,DWORD &FileAttr,string *ShortName=nullptr,FAR_FIND_DATA_EX *fd=nullptr) {return FALSE;}
+		#endif
 		virtual void UngetSelName() {}
 		virtual void ClearLastGetSelection() {}
 		virtual unsigned __int64 GetLastSelectedSize() {return (unsigned __int64)(-1);}
