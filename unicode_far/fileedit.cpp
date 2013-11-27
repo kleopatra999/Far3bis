@@ -1976,6 +1976,7 @@ int FileEditor::SaveFile(const string& Name,int Ask, bool bSaveAs, int TextForma
 		api::File EditFile;
 		DWORD dwWritten=0;
 		// Don't use CreationDisposition=CREATE_ALWAYS here - it's kills alternate streams
+		//Maximus: TRUNCATE_EXISTING may cause errors - http://forum.farmanager.com/viewtopic.php?p=84675#p84675
 		if(!EditFile.Open(Name, m_Flags.Check(FFILEEDIT_NEW)? FILE_WRITE_DATA : GENERIC_WRITE, FILE_SHARE_READ, nullptr, m_Flags.Check(FFILEEDIT_NEW)? CREATE_NEW : TRUNCATE_EXISTING, FILE_ATTRIBUTE_ARCHIVE|FILE_FLAG_SEQUENTIAL_SCAN))
 		{
 			//_SVS(SysLogLastError();SysLog(L"Name='%s',FileAttributes=%d",Name,FileAttributes));
@@ -2147,6 +2148,9 @@ int FileEditor::SaveFile(const string& Name,int Ask, bool bSaveAs, int TextForma
 		else
 		{
 			SysErrorCode=GetLastError();
+			//Maximus: http://forum.farmanager.com/viewtopic.php?p=84675#p84675
+			//         в некоторых случаях происходит облом (сетевая шара MacOS)
+			//         ErrCode=0x0000003A (58) - The specified server cannot perform the requested operation.
 			EditFile.Close();
 			api::DeleteFile(Name);
 			RetCode=SAVEFILE_ERROR;
