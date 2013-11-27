@@ -84,6 +84,50 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "xlat.hpp"
 #include "dirinfo.hpp"
 
+#if 1
+//Maximus: для отладки
+//#define SHOW_UNSAFE_MSG
+#undef SHOW_UNSAFE_MSG
+BOOL gbInOpenPlugin = FALSE;
+BOOL gbInEditorEvent = FALSE;
+#ifndef _DEBUG
+BOOL gbReportInRelease = FALSE;
+#endif
+void ReportThreadUnsafeCall(const wchar_t* asFormat, DWORD anCommand)
+{
+	static bool bSkipBuzz = false;
+	if (bSkipBuzz)
+		return;
+	//TODO: ругнуться в MessageBoxW и если "Да" - то сформировать MiniDump
+	wchar_t szUnsafe[2048], szReady[1024], szFar[128];
+	wsprintf(szReady, asFormat, anCommand);
+	wsprintf(szUnsafe, L"Thread UnSafe api call detected!\n%s\nCurrent TID=%u, Main TID=%u\n", szReady, GetCurrentThreadId(), gnMainThreadId);
+	wsprintf(szFar, L"Far PID=%u", GetCurrentProcessId());
+#ifdef _DEBUG
+	int nBtn;
+	#ifdef SHOW_UNSAFE_MSG
+	nBtn = MessageBox(NULL, szUnsafe, szFar, MB_ICONSTOP|MB_SYSTEMMODAL|MB_CANCELTRYCONTINUE);
+	#else
+	OutputDebugString(szUnsafe);
+	nBtn = IDCONTINUE;
+	#endif
+	if (nBtn == IDCANCEL)
+	{
+		bSkipBuzz = true;
+		return;
+	}
+	if (nBtn == IDTRYAGAIN)
+	{
+		DebugBreak();
+		nBtn = IDTRYAGAIN; // чтобы было куда breakpoint ставить
+	}
+#else
+	if (gbReportInRelease)
+		OutputDebugString(szUnsafe);
+#endif
+}
+#endif
+
 namespace pluginapi
 {
 inline Plugin* GuidToPlugin(const GUID* Id) {return (Id && Global->CtrlObject)? Global->CtrlObject->Plugins->FindPlugin(*Id) : nullptr;}
@@ -314,6 +358,49 @@ BOOL WINAPI apiShowHelp(
 */
 intptr_t WINAPI apiAdvControl(const GUID* PluginId, ADVANCED_CONTROL_COMMANDS Command, intptr_t Param1, void* Param2)
 {
+	#if 1
+	//Maximus: для отлова недобросовестных плагинов
+	if (gnMainThreadId != GetCurrentThreadId())
+	{
+		// Некоторые плагины блокируют главную нить для безопасных вызовов API
+		// Отсечь это корректно - сложно, поэтому просто проверяем, а не в OpenPlugin ли мы?
+		BOOL lbSafe = gbInOpenPlugin;
+
+		if (Command == ACTL_GETFARMANAGERVERSION
+			//|| Command == ACTL_GETPLUGINMAXREADDATA
+			|| Command == ACTL_GETCOLOR
+			|| Command == ACTL_GETARRAYCOLOR
+			|| Command == ACTL_GETFARHWND
+			//|| Command == ACTL_GETDIALOGSETTINGS
+			//|| Command == ACTL_GETSYSTEMSETTINGS
+			//|| Command == ACTL_GETPANELSETTINGS
+			//|| Command == ACTL_GETINTERFACESETTINGS
+			//|| Command == ACTL_GETCONFIRMATIONS
+			//|| Command == ACTL_GETDESCSETTINGS
+			|| Command == ACTL_GETFARRECT
+			|| Command == ACTL_SETPROGRESSSTATE || Command == ACTL_SETPROGRESSVALUE
+			|| Command == ACTL_SYNCHRO
+			)
+		{
+			lbSafe = TRUE;
+		}
+		//// официально - только ACTL_SYNCHRO thread-safe в Far2,
+		//// но есть функция MCMD_GETAREA, которую можно звать из любого потока
+		//else if (Command == ACTL_KEYMACRO)
+		//{
+		//	ActlKeyMacro *KeyMacro=(ActlKeyMacro*)Param;
+		//	lbSafe = (KeyMacro->Command == MCMD_GETAREA);
+		//}
+
+		// Некоторые плагины блокируют главную нить для безопасных вызовов API
+		// Отсечь это корректно - сложно, поэтому просто проверяем, а не в OpenPlugin ли мы?
+		if (!lbSafe && !gbInOpenPlugin)
+		{
+			ReportThreadUnsafeCall(L"AdvControl(%u)", Command);
+		}
+	}
+	#endif
+
 	if (ACTL_SYNCHRO==Command) //must be first
 	{
 		Global->PluginSynchroManager->Synchro(true, *PluginId, Param2);
@@ -1119,6 +1206,20 @@ intptr_t WINAPI apiPanelControl(HANDLE hPlugin,FILE_CONTROL_COMMANDS Command,int
 	if (Command == FCTL_CHECKPANELSEXIST)
 		return !Global->Opt->OnlyEditorViewerUsed;
 
+	#if 1
+	//Maximus: для отлова недобросовестных плагинов
+	if (gnMainThreadId != GetCurrentThreadId())
+	{
+		// Некоторые плагины блокируют главную нить для безопасных вызовов API
+		// Отсечь это корректно - сложно, поэтому просто проверяем, а не в OpenPlugin ли мы?
+		BOOL lbSafe = gbInOpenPlugin;
+		if (!lbSafe)
+		{
+			ReportThreadUnsafeCall(L"Control(%u)", Command);
+		}
+	}
+	#endif
+
 	if (Global->Opt->OnlyEditorViewerUsed || !Global->CtrlObject || FrameManager->ManagerIsDown())
 		return 0;
 
@@ -1453,6 +1554,21 @@ void WINAPI apiFreePluginDirList(HANDLE hPlugin, PluginPanelItem *PanelItem, siz
 intptr_t WINAPI apiViewer(const wchar_t *FileName,const wchar_t *Title,
                      intptr_t X1,intptr_t Y1,intptr_t X2, intptr_t Y2,unsigned __int64 Flags, uintptr_t CodePage)
 {
+	#if 1
+	//Maximus: для отлова недобросовестных плагинов
+	if (gnMainThreadId != GetCurrentThreadId())
+	{
+		// Некоторые плагины блокируют главную нить для безопасных вызовов API
+		// Отсечь это корректно - сложно, поэтому просто проверяем, а не в OpenPlugin ли мы?
+		BOOL lbSafe = gbInOpenPlugin;
+		if (!lbSafe)
+		{
+			ReportThreadUnsafeCall(L"Viewer()", 0);
+		}
+	}
+	#endif
+
+
 	if (FrameManager->ManagerIsDown())
 		return FALSE;
 
@@ -1528,6 +1644,20 @@ intptr_t WINAPI apiViewer(const wchar_t *FileName,const wchar_t *Title,
 
 intptr_t WINAPI apiEditor(const wchar_t* FileName, const wchar_t* Title, intptr_t X1, intptr_t Y1, intptr_t X2, intptr_t Y2, unsigned __int64 Flags, intptr_t StartLine, intptr_t StartChar, uintptr_t CodePage)
 {
+	#if 1
+	//Maximus: для отлова недобросовестных плагинов
+	if (gnMainThreadId != GetCurrentThreadId())
+	{
+		// Некоторые плагины блокируют главную нить для безопасных вызовов API
+		// Отсечь это корректно - сложно, поэтому просто проверяем, а не в OpenPlugin ли мы?
+		BOOL lbSafe = gbInOpenPlugin;
+		if (!lbSafe)
+		{
+			ReportThreadUnsafeCall(L"Editor()", 0);
+		}
+	}
+	#endif
+
 	if (FrameManager->ManagerIsDown())
 		return EEC_OPEN_ERROR;
 
@@ -1677,6 +1807,20 @@ void WINAPI apiText(intptr_t X,intptr_t Y,const FarColor* Color,const wchar_t *S
 
 intptr_t WINAPI apiEditorControl(intptr_t EditorID, EDITOR_CONTROL_COMMANDS Command, intptr_t Param1, void* Param2)
 {
+	#if 1
+	//Maximus: для отлова недобросовестных плагинов
+	if (gnMainThreadId != GetCurrentThreadId())
+	{
+		// Некоторые плагины блокируют главную нить для безопасных вызовов API
+		// Отсечь это корректно - сложно, поэтому просто проверяем, а не в OpenPlugin ли мы?
+		BOOL lbSafe = gbInEditorEvent;
+		if (!lbSafe)
+		{
+			ReportThreadUnsafeCall(L"EditorControl(%u)", Command);
+		}
+	}
+	#endif
+
 	if (FrameManager->ManagerIsDown())
 		return 0;
 
@@ -1720,6 +1864,20 @@ intptr_t WINAPI apiEditorControl(intptr_t EditorID, EDITOR_CONTROL_COMMANDS Comm
 
 intptr_t WINAPI apiViewerControl(intptr_t ViewerID, VIEWER_CONTROL_COMMANDS Command, intptr_t Param1, void* Param2)
 {
+	#if 1
+	//Maximus: для отлова недобросовестных плагинов
+	if (gnMainThreadId != GetCurrentThreadId())
+	{
+		// Некоторые плагины блокируют главную нить для безопасных вызовов API
+		// Отсечь это корректно - сложно, поэтому просто проверяем, а не в OpenPlugin ли мы?
+		BOOL lbSafe = gbInOpenPlugin;
+		if (!lbSafe)
+		{
+			ReportThreadUnsafeCall(L"ViewerControl(%u)", Command);
+		}
+	}
+	#endif
+
 	if (FrameManager->ManagerIsDown())
 		return 0;
 
