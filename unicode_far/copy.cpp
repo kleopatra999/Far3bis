@@ -1756,6 +1756,7 @@ COPY_CODES ShellCopy::CopyFileTree(const string& Dest)
 					if (apiCreateDirectory(strNewPath,nullptr))
 						TreeList::AddTreeName(strNewPath);
 					else
+						//Maximus: BUGBUG: игнорируется ошибка создания каталога!
 						CreatePath(strNewPath);
 				}
 				else if (!(Attr & FILE_ATTRIBUTE_DIRECTORY))
