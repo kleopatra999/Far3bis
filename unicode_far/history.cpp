@@ -48,6 +48,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "configdb.hpp"
 #include "datetime.hpp"
 #include "FarGuid.hpp"
+#include "elevation.hpp"
+#include "pathmix.hpp"
 
 History::History(enumHISTORYTYPE TypeHistory, const wchar_t *HistoryName, const BoolOption& EnableSave, bool SaveType):
 	strHistoryName(HistoryName),
@@ -554,8 +556,39 @@ int History::ProcessMenu(string &strStr, GUID* Guid, string *pstrFile, string *p
 				return -1;
 
 			//BUGUBUG: eliminate those magic numbers!
+			#if 1
+			//Maximus: для сетевых ресурсов - танцы с бубном
+			if (Opt.RemoteAutoLogin
+				&& SelectedRecordType != 2 && SelectedRecordType != 3 // ignore external
+				&& RetCode != 3 && ((TypeHistory == HISTORYTYPE_FOLDER && strSelectedRecordGuid.IsEmpty()) || TypeHistory == HISTORYTYPE_VIEW))
+			{
+				wchar_t *DirPtr=nullptr;
+				string strCopy=strSelectedRecordName.CPtr();
+				PATH_TYPE Type = ParsePath(strCopy,(const wchar_t**)&DirPtr);
+				if(Type == PATH_REMOTE /*|| Type == PATH_REMOTEUNC*/)
+				{
+					DisableElevation de;
+					if (apiGetFileAttributes(strSelectedRecordName) == INVALID_FILE_ATTRIBUTES)
+					{
+						FarMacroValue vParams[2]={{FMVT_STRING},{FMVT_STRING}};
+						vParams[0].String=L"connect";
+						if (DirPtr)
+							*DirPtr=0;
+						vParams[1].String=strCopy.CPtr();
+						OpenMacroInfo info={sizeof(OpenMacroInfo),2,vParams};
+						int CallResult=0; //we must pass (&CallResult) to avoid memory leak
+						CtrlObject->Plugins->CallPlugin(Opt.KnownIDs.Network,OPEN_FROMMACRO,&info,&CallResult);
+						//CallResult==1 on succeess?
+					}
+				}
+			}
+			//Maximus: поплясали - теперь как обычно
 			if (SelectedRecordType != 2 && SelectedRecordType != 3 // ignore external
 				&& RetCode != 3 && ((TypeHistory == HISTORYTYPE_FOLDER && strSelectedRecordGuid.IsEmpty()) || TypeHistory == HISTORYTYPE_VIEW) && apiGetFileAttributes(strSelectedRecordName) == INVALID_FILE_ATTRIBUTES)
+			#else
+			if (SelectedRecordType != 2 && SelectedRecordType != 3 // ignore external
+				&& RetCode != 3 && ((TypeHistory == HISTORYTYPE_FOLDER && strSelectedRecordGuid.IsEmpty()) || TypeHistory == HISTORYTYPE_VIEW) && apiGetFileAttributes(strSelectedRecordName) == INVALID_FILE_ATTRIBUTES)
+			#endif
 			{
 				SetLastError(ERROR_FILE_NOT_FOUND);
 

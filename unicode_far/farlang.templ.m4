@@ -2028,6 +2028,16 @@ MConfigPgUpChangeDisk
 "Usar Ctrl-Pg&Up para cambiar unidad"
 "Použiť Ctrl-Pg&Up na zmenu disku"
 
+MConfigRemoteAutoLogin
+"Диалог подключения к удаленному серверу"
+"Remote server login dialog"
+upd:"&Remote server login dialog"
+upd:"Remote server login dialog"
+upd:"Remote server login dialog"
+upd:"Remote server login dialog"
+upd:"Remote server login dialog"
+upd:"Remote server login dialog"
+
 MConfigClearType
 "Уч&итывать состояние ClearType"
 "Cl&earType friendly redraw (can be slow)"
