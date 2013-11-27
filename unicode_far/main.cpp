@@ -318,6 +318,11 @@ static void InitTemplateProfile(string &strTemplatePath)
 	}
 }
 
+#if 1
+//Maximus: для отладки
+DWORD gnMainThreadId = 0;
+#endif
+
 static void InitProfile(string &strProfilePath, string &strLocalProfilePath)
 {
 	if (!strProfilePath.empty())
@@ -406,6 +411,11 @@ static void InitProfile(string &strProfilePath, string &strLocalProfilePath)
 
 static int mainImpl(int Argc, wchar_t *Argv[])
 {
+	#if 1
+	//Maximus: для отладки
+	gnMainThreadId = GetCurrentThreadId();
+	#endif
+
 	global _g;
 
 	SetErrorMode(Global->ErrorMode);
