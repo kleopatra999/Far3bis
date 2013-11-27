@@ -495,6 +495,8 @@ bool File::NtQueryDirectoryFile(PVOID FileInformation, ULONG Length, FILE_INFORM
 		pNameString = &NameString;
 	}
 	NTSTATUS Result = ifn.NtQueryDirectoryFile(Handle, nullptr, nullptr, nullptr, &IoStatusBlock, FileInformation, Length, FileInformationClass, ReturnSingleEntry, pNameString, RestartScan);
+	//Maximus: для отладки
+	_ASSERTE(Result!=STATUS_DATATYPE_MISALIGNMENT);
 	SetLastError(ifn.RtlNtStatusToDosError(Result));
 	if(Status)
 	{
