@@ -460,6 +460,11 @@ intptr_t WINAPI apiAdvControl(const GUID* PluginId, ADVANCED_CONTROL_COMMANDS Co
 		{
 			if (Param2)
 				*(VersionInfo*)Param2=FAR_VERSION;
+			#if 1
+			//Maximus: Bis Version
+			if (Param2)
+				((VersionInfo*)Param2)->Stage=VS_BIS;
+			#endif
 
 			return TRUE;
 		}
