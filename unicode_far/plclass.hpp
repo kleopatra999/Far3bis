@@ -133,6 +133,10 @@ enum EXPORTS_ENUM
 
 	iOpenFilePlugin,
 	iGetMinFarVersion,
+	#if 1
+	//Maximus: поддержка Far3wrap
+	iWrapperFunction2, // FarWrapGetProcAddress
+	#endif
 	i_LAST
 };
 
@@ -184,6 +188,10 @@ public:
 #ifndef NO_WRAPPER
 	virtual bool IsOemPlugin() const { return false; }
 #endif // NO_WRAPPER
+	#if 1
+	//Maximus: поддержка Far3wrap
+	virtual bool IsFar2Plugin() const { return HasWrapperFunction2(); }
+	#endif
 	virtual const wchar_t *GetHotkeyName() const { return m_strGuid; }
 
 	virtual bool InitLang(const wchar_t *Path) { return PluginLang.Init(Path); }
@@ -228,6 +236,11 @@ public:
 
 	bool HasOpenFilePlugin()      const { return Exports[iOpenFilePlugin]!=nullptr; }
 	bool HasMinFarVersion()       const { return Exports[iGetMinFarVersion]!=nullptr; }
+
+	#if 1
+	//Maximus: поддержка Far3wrap
+	bool HasWrapperFunction2()    const { return Exports[iWrapperFunction2]!=nullptr; }
+	#endif
 
 	const string &GetModuleName() const { return m_strModuleName; }
 	const wchar_t *GetCacheName() const  { return m_strCacheName; }

@@ -283,8 +283,18 @@ static size_t AddPluginItems(VMenu &ChDisk, int Pos, int DiskCount, bool SetSele
 				item->bIsPlugin = true;
 				item->pPlugin = pPlugin;
 				item->Guid = guid;
+				#if 1
+				//Maximus: поддержка Far3wrap
+				if (pPlugin->IsFar2Plugin())
+					OneItem.Item.Flags=LIF_CHECKED|L'2';
+				#endif
 #ifndef NO_WRAPPER
+				#if 1
+				//Maximus: поддержка Far3wrap
+				else if (pPlugin->IsOemPlugin())
+				#else
 				if (pPlugin->IsOemPlugin())
+				#endif
 					OneItem.Item.Flags=LIF_CHECKED|L'A';
 #endif // NO_WRAPPER
 				OneItem.Item.strName = strMenuText;

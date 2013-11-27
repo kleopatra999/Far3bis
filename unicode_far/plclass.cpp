@@ -86,6 +86,11 @@ typedef int    (WINAPI *iGetCustomDataPrototype)       (const wchar_t *FilePath,
 typedef void   (WINAPI *iFreeCustomDataPrototype)      (wchar_t *CustomData);
 typedef void   (WINAPI *iCloseAnalysePrototype)        (const CloseAnalyseInfo *Info);
 
+#if 1
+//Maximus: поддержка Far3wrap
+typedef void*  (WINAPI *iWrapperFunction2Prototype)    (HMODULE hModule, LPCSTR lpProcName);
+#endif
+
 
 #define EXP_GETGLOBALINFO       "GetGlobalInfoW"
 #define EXP_SETSTARTUPINFO      "SetStartupInfoW"
@@ -127,6 +132,11 @@ typedef void   (WINAPI *iCloseAnalysePrototype)        (const CloseAnalyseInfo *
 
 #define EXP_OPENFILEPLUGIN      ""
 #define EXP_GETMINFARVERSION    ""
+
+#if 1
+//Maximus: поддержка Far3wrap
+#define EXP_WRAPPERFUNCTION2    "FarWrapGetProcAddress"
+#endif
 
 
 static const char* _ExportsNamesA[i_LAST] =
@@ -171,6 +181,11 @@ static const char* _ExportsNamesA[i_LAST] =
 
 	EXP_OPENFILEPLUGIN,
 	EXP_GETMINFARVERSION,
+
+	#if 1
+	//Maximus: поддержка Far3wrap
+	EXP_WRAPPERFUNCTION2,
+	#endif
 };
 
 
@@ -216,6 +231,11 @@ static const wchar_t* _ExportsNamesW[i_LAST] =
 
 	W(EXP_OPENFILEPLUGIN),
 	W(EXP_GETMINFARVERSION),
+
+	#if 1
+	//Maximus: поддержка Far3wrap
+	W(EXP_WRAPPERFUNCTION2),
+	#endif
 };
 
 static BOOL PrepareModulePath(const wchar_t *ModuleName)
@@ -382,7 +402,13 @@ bool Plugin::SaveToCache()
 		Exports[iProcessConsoleInput] ||
 #endif
 		Exports[iAnalyse] ||
+		#if 0
 		Exports[iGetCustomData]
+		#else
+		//Maximus: поддержка Far3wrap
+		Exports[iGetCustomData] ||
+		Exports[iWrapperFunction2]
+		#endif
 	)
 	{
 		PluginInfo Info = {sizeof(Info)};
@@ -465,6 +491,10 @@ bool Plugin::SaveToCache()
 		OPT_SETEXPORT(iConfigure);
 		OPT_SETEXPORT(iAnalyse);
 		OPT_SETEXPORT(iGetCustomData);
+		#if 1
+		//Maximus: поддержка Far3wrap
+		OPT_SETEXPORT(iWrapperFunction2);
+		#endif
 
 		PlCacheCfg->EndTransaction();
 
@@ -518,6 +548,11 @@ void Plugin::InitExports()
 
 	OPT_GetProcAddress(iOpenFilePlugin);
 	OPT_GetProcAddress(iGetMinFarVersion);
+
+	#if 1
+	//Maximus: поддержка Far3wrap
+	OPT_GetProcAddress(iWrapperFunction2);
+	#endif
 
 #undef OPT_GetProcAddress
 }
@@ -756,6 +791,10 @@ bool Plugin::LoadFromCache(const FAR_FIND_DATA_EX &FindData)
 		OPT_GETEXPORT(iConfigure);
 		OPT_GETEXPORT(iAnalyse);
 		OPT_GETEXPORT(iGetCustomData);
+		#if 1
+		//Maximus: поддержка Far3wrap
+		OPT_GETEXPORT(iWrapperFunction2);
+		#endif
 		WorkFlags.Set(PIWF_CACHED); //too much "cached" flags
 		return true;
 	}

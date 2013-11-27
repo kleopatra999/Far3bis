@@ -93,6 +93,11 @@ namespace wrapper
 #define EXP_OPENFILEPLUGIN      "OpenFilePlugin"
 #define EXP_GETMINFARVERSION    "GetMinFarVersion"
 
+#if 1
+//Maximus: поддержка Far3wrap
+#define EXP_WRAPPERFUNCTION2    ""
+#endif
+
 
 static const char* _ExportsNamesA[i_LAST] =
 {
@@ -136,6 +141,11 @@ static const char* _ExportsNamesA[i_LAST] =
 
 	EXP_OPENFILEPLUGIN,
 	EXP_GETMINFARVERSION,
+	
+	#if 1
+	//Maximus: поддержка Far3wrap
+	EXP_WRAPPERFUNCTION2,
+	#endif
 };
 
 
@@ -181,6 +191,11 @@ static const wchar_t* _ExportsNamesW[i_LAST] =
 
 	W(EXP_OPENFILEPLUGIN),
 	W(EXP_GETMINFARVERSION),
+	
+	#if 1
+	//Maximus: поддержка Far3wrap
+	W(EXP_WRAPPERFUNCTION2),
+	#endif
 };
 
 typedef void   (WINAPI *iClosePanelPrototype)          (HANDLE hPlugin);
