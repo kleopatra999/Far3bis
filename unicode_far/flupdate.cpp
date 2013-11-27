@@ -433,6 +433,11 @@ void FileList::ReadFileNames(int KeepSelection, int UpdateEvenIfPanelInvisible, 
 		AddEndSlash(strPath);
 		size_t PanelCount=0;
 
+		#if 1
+		//Maximus: один раз свалилось в GetVirtualFindData
+		_ASSERTE(hAnotherPlugin!=NULL);
+		#endif
+
 		if (Global->CtrlObject->Plugins->GetVirtualFindData(hAnotherPlugin,&PanelData,&PanelCount,strPath))
 		{
 			auto OldSize = ListData.size(), Position = OldSize - 1;
