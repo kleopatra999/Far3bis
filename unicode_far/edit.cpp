@@ -422,11 +422,16 @@ void Edit::FastShow()
 				OutStr[OutStrLength++]=Oem2Unicode[10];
 				break;
 			case EOL_CRLF:
+				#if 1
+				//Maximus: "CRLF" переводы строк - одним символом параграфа
+				OutStr[OutStrLength++]=L'\xB6';
+				#else
 				OutStr[OutStrLength++]=Oem2Unicode[13];
 				if(OutStrLength < EditLength)
 				{
 					OutStr[OutStrLength++]=Oem2Unicode[10];
 				}
+				#endif
 				break;
 			case EOL_CRCRLF:
 				OutStr[OutStrLength++]=Oem2Unicode[13];
@@ -2712,7 +2717,8 @@ void Edit::AddColor(ColorItem *col,bool skipsort)
 	}
 
 	#ifdef _DEBUG
-	//_ASSERTE(ColorCount<MaxColorCount);
+	//Maximus: для отладки
+	_ASSERTE(ColorCount<MaxColorCount);
 	#endif
 
 	if (skipsort && !ColorListNeedSort && ColorCount && ColorList[ColorCount-1].Priority>col->Priority)
