@@ -1220,6 +1220,53 @@ int PluginManager::Compare(
 	return ph->pPlugin->Compare(&Info);
 }
 
+//Maximus: расширенное меню плагинов от DataMan
+void PluginManager::GetPluginVersion(LPCTSTR ModuleName,string &strModuleVer)
+{
+	struct VerInfo
+	{
+		DWORD Version;
+		DWORD SubVersion;
+		DWORD Release;
+		DWORD Build;
+		VerInfo()
+		{
+			Version=0;
+			SubVersion=0;
+			Release=0;
+			Build=0;
+		}
+	};
+	VerInfo vi;
+	DWORD dwHandle;
+	DWORD dwSize=GetFileVersionInfoSize(ModuleName,&dwHandle);
+	if(dwSize)
+	{
+		LPVOID Data=xf_malloc(dwSize);
+		if(Data)
+		{
+			if(GetFileVersionInfo(ModuleName,NULL,dwSize,Data))
+			{
+				UINT Len;
+				LPVOID Buffer;
+				if(VerQueryValue(Data,L"\\",&Buffer,&Len))
+				{
+					VS_FIXEDFILEINFO *ffi=(VS_FIXEDFILEINFO*)Buffer;
+					if(ffi->dwFileType==VFT_APP || ffi->dwFileType==VFT_DLL)
+					{
+						vi.Version=LOBYTE(HIWORD(ffi->dwFileVersionMS));
+						vi.SubVersion=LOBYTE(LOWORD(ffi->dwFileVersionMS));
+						vi.Release=HIWORD(ffi->dwFileVersionLS);
+						vi.Build=LOWORD(ffi->dwFileVersionLS);
+					}
+				}
+			}
+			xf_free(Data);
+		}
+	}
+	strModuleVer = str_printf(L"%d.%d.%d.%d",vi.Version,vi.SubVersion,vi.Release,vi.Build);
+}
+
 void PluginManager::ConfigureCurrent(Plugin *pPlugin, const GUID& Guid)
 {
 	ConfigureInfo Info = {sizeof(Info)};
