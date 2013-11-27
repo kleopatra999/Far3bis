@@ -436,6 +436,11 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 		strPath = strCurDir;
 		AddEndSlash(strPath);
 
+		#if 1
+		//Maximus: один раз свалилось в GetVirtualFindData
+		_ASSERTE(hAnotherPlugin!=NULL);
+		#endif
+
 		if (CtrlObject->Plugins->GetVirtualFindData(hAnotherPlugin,&PanelData,&PanelCount,strPath))
 		{
 			FileListItem **pTemp;
