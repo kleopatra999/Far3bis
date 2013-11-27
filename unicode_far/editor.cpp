@@ -3418,6 +3418,7 @@ void Editor::InsertString()
 		}
 
 		CurLine->SetBinaryString(NewCurLineStr.data(), static_cast<int>(NewCurLineStr.size()));
+		//Maximus: BUGBUG: softbreaks: нужно проверить
 		Change(ECTYPE_CHANGED,NumLine);
 	}
 	else
@@ -3436,6 +3437,7 @@ void Editor::InsertString()
 		NewString->SetEOL(EndSeq);
 	}
 
+	//Maximus: BUGBUG: softbreaks: нужно проверить
 	Change(ECTYPE_CHANGED,NumLine+1);
 
 	if (VBlockStart != Lines.end() && NumLine<VBlockY + VBlockSizeY)
@@ -6490,6 +6492,11 @@ int Editor::EditorControl(int Command, intptr_t Param1, void *Param2)
 				return TRUE;
 			}
 			break;
+		}
+		case ECTL_DROPMODIFEDFLAG:
+		{
+			m_Flags.Clear(FEDITOR_MODIFIED);
+			return TRUE;
 		}
 	}
 
