@@ -628,6 +628,11 @@ bool Plugin::LoadData()
 		}
 
 		PrepareModulePath(m_strModuleName);
+		#ifdef _DEBUG
+		//Maximus: для отладки
+		string strDbgMsg=L"FarPluginLoad: "+m_strModuleName+"\n";
+		OutputDebugString(strDbgMsg);
+		#endif
 		m_hModule = LoadLibraryEx(m_strModuleName,nullptr,0);
 		if(!m_hModule) m_hModule = LoadLibraryEx(m_strModuleName,nullptr,LOAD_WITH_ALTERED_SEARCH_PATH);
 		GuardLastError Err;

@@ -266,6 +266,10 @@ extern GeneralConfig *GeneralCfg;
 extern ColorsConfig *ColorsCfg;
 extern AssociationsConfig *AssocConfig;
 extern PluginsCacheConfig *PlCacheCfg;
+#ifdef _DEBUG
+//Maximus: для отлдаки
+extern int PlCacheCfgEnum;
+#endif
 extern PluginsHotkeysConfig *PlHotkeyCfg;
 extern HistoryConfig *HistoryCfg;
 extern HistoryConfig *HistoryCfgMem;

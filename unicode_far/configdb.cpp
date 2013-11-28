@@ -56,6 +56,10 @@ GeneralConfig *GeneralCfg;
 ColorsConfig *ColorsCfg;
 AssociationsConfig *AssocConfig;
 PluginsCacheConfig *PlCacheCfg;
+#ifdef _DEBUG
+//Maximus: для отладки
+int PlCacheCfgEnum = 0;
+#endif
 PluginsHotkeysConfig *PlHotkeyCfg;
 HistoryConfig *HistoryCfg;
 HistoryConfig *HistoryCfgMem;
