@@ -1327,6 +1327,10 @@ int PluginManager::ProcessMacro(const GUID& guid,ProcessMacroInfo *Info)
 #if defined(MANTIS_0001687)
 int PluginManager::ProcessConsoleInput(ProcessConsoleInputInfo *Info)
 {
+	//Maximus: Ќаверное нефиг плагинам ковыр€тьс€, когда клавиша на макрос назначаетс€
+	if (IsProcessAssignMacroKey)
+		return 0;
+
 	int nResult = 0;
 
 	for (size_t i=0; i<PluginsCount; i++)
