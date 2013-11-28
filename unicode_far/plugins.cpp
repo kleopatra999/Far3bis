@@ -1613,6 +1613,14 @@ int PluginManager::ProcessEvent(
 )
 {
 	PluginHandle *ph = (PluginHandle*)hPlugin;
+#if 1
+	//Maximus: Проверка значений
+	if (ph==NULL || ph==INVALID_HANDLE_VALUE || ph==(HANDLE)TRUE || ph==(HANDLE)-2 || ph->pPlugin==NULL)
+	{
+		_ASSERTE(!(ph==NULL || ph==INVALID_HANDLE_VALUE || ph==(HANDLE)TRUE || ph==(HANDLE)-2 || ph->pPlugin==NULL));
+		return 0;
+	}
+#endif
 	return ph->pPlugin->ProcessPanelEvent(ph->hPlugin, Event, Param);
 }
 
@@ -2792,6 +2800,7 @@ int PluginManager::CallPlugin(const GUID& SysID,int OpenFrom, void *Data,int *Re
 
 			if (Ret)
 			{
+				_ASSERTE(OpenFrom == OPEN_FROMMACRO);
 				PluginHandle *handle=(PluginHandle *)hNewPlugin;
 				*Ret = (hNewPlugin && handle->hPlugin) ? 1 : 0;
 				delete handle;
