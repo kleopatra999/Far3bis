@@ -216,4 +216,9 @@ private:
 	FileEditor* m_CurEditor;
 	Viewer* m_CurViewer;
 	bool m_PluginsLoaded;
+
+    #ifdef _DEBUG
+    //Maximus: для отлдаки
+    static int PlCacheCfgEnum;
+    #endif
 };
