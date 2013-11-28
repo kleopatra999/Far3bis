@@ -70,6 +70,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 static const wchar_t *PluginsFolderName=L"Plugins";
 
+#ifdef _DEBUG
+//Maximus: для отладки
+int PluginManager::PlCacheCfgEnum = 0;
+#endif
+
 static void ReadUserBackgound(SaveScreen *SaveScr)
 {
 	FilePanels *FPanel = Global->CtrlObject->Cp();
@@ -586,6 +591,9 @@ void PluginManager::LoadPluginsFromCache()
 
 	#ifdef _DEBUG
 	//Maximus: Для отладки
+	_ASSERTE(PluginManager::PlCacheCfgEnum==0);
+	PluginManager::PlCacheCfgEnum++;
+
 	string strTest;
 	DWORD nInitialCount = 0;
 	OutputDebugString(L"PluginManager::LoadPluginsFromCache.Initial\n");
@@ -638,6 +646,12 @@ void PluginManager::LoadPluginsFromCache()
 			LoadPlugin(strModuleName, FindData, false);
 			#endif
 	}
+
+	#ifdef _DEBUG
+	//Maximus: для отладки
+	PluginManager::PlCacheCfgEnum--;
+	_ASSERTE(PluginManager::PlCacheCfgEnum==0);
+	#endif
 }
 
 PluginHandle* PluginManager::OpenFilePlugin(
@@ -1043,11 +1057,19 @@ int PluginManager::ProcessConsoleInput(ProcessConsoleInputInfo *Info) const
 			if (n == 1)
 			{
 				nResult = 1;
+				#ifdef _DEBUG
+				//Maximus: ловим бага
+				OutputDebugString(L"  -- Input dropped\n");
+				#endif
 				break;
 			}
 			else if (n == 2)
 			{
 				nResult = 2;
+				#ifdef _DEBUG
+				//Maximus: ловим бага
+				OutputDebugString(L"  -- Input changed\n");
+				#endif
 			}
 		}
 	}
@@ -1794,6 +1816,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 
 	auto hPlugin=Open(item.pPlugin,OpenCode,item.Guid,Item);
 
+	_ASSERTE(hPlugin!=INVALID_HANDLE_VALUE && hPlugin!=(HANDLE)-2);
 	if (hPlugin && !Editor && !Viewer && !Dialog)
 	{
 		if (ActivePanel->ProcessPluginEvent(FE_CLOSE,nullptr))
