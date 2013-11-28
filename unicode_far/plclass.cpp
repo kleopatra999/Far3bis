@@ -386,6 +386,21 @@ static void ShowMessageAboutIllegalPluginVersion(const wchar_t* plg,const Versio
 
 bool Plugin::SaveToCache()
 {
+	#if 1
+	//Maximus: Ќе сохран€ть в кеш, если груз€тс€ плагины только из кеша "/co"!
+	//Maximus: если это вызвать из LoadPluginsFromCache - возникнут коллизии с PlCacheCfg->EnumPlugins
+	if (Opt.LoadPlug.PluginsCacheOnly)
+	{
+		return false;
+	}
+	#ifdef _DEBUG
+	else
+	{
+		_ASSERTE(PlCacheCfgEnum==0);
+	}
+	#endif
+	#endif
+
 	if (Exports[iGetGlobalInfo] ||
 		Exports[iGetPluginInfo] ||
 		Exports[iOpen] ||
