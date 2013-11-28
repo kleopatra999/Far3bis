@@ -549,6 +549,9 @@ void PluginManager::LoadPluginsFromCache()
 
 	#ifdef _DEBUG
 	//Maximus: Для отладки
+	_ASSERTE(PlCacheCfgEnum==0);
+	PlCacheCfgEnum++;
+
 	string strTest;
 	DWORD nInitialCount = 0;
 	OutputDebugString(L"PluginManager::LoadPluginsFromCache.Initial\n");
@@ -601,6 +604,12 @@ void PluginManager::LoadPluginsFromCache()
 			LoadPlugin(strModuleName, FindData, false);
 			#endif
 	}
+
+	#ifdef _DEBUG
+	//Maximus: для отладки
+	PlCacheCfgEnum--;
+	_ASSERTE(PlCacheCfgEnum==0);
+	#endif
 }
 
 HANDLE PluginManager::OpenFilePlugin(
@@ -1017,15 +1026,25 @@ int PluginManager::ProcessConsoleInput(ProcessConsoleInputInfo *Info)
 
 		if (pPlugin->HasProcessConsoleInput())
 		{
+			//Maximus: вроде сейчас все ок
+			_ASSERTE(pPlugin == PluginsData[i]);
 			int n = pPlugin->ProcessConsoleInput(Info);
 			if (n == 1)
 			{
 				nResult = 1;
+				#ifdef _DEBUG
+				//Maximus: ловим бага
+				OutputDebugString(L"  -- Input dropped\n");
+				#endif
 				break;
 			}
 			else if (n == 2)
 			{
 				nResult = 2;
+				#ifdef _DEBUG
+				//Maximus: ловим бага
+				OutputDebugString(L"  -- Input changed\n");
+				#endif
 			}
 		}
 	}
@@ -1893,6 +1912,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 
 	HANDLE hPlugin=Open(item.pPlugin,OpenCode,item.Guid,Item);
 
+	_ASSERTE(hPlugin!=INVALID_HANDLE_VALUE && hPlugin!=(HANDLE)-2);
 	if (hPlugin && !Editor && !Viewer && !Dialog)
 	{
 		if (ActivePanel->ProcessPluginEvent(FE_CLOSE,nullptr))
