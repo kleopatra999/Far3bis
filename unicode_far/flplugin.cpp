@@ -198,7 +198,12 @@ void FileList::PopPrevData(const string& DefaultName,bool Closed,bool UsePrev,bo
 		else
 			GoToFile(strName);
 
+		#if 1
+		//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+		SetTopFile(UpperFolderTopFile);
+		#else
 		CurTopFile=UpperFolderTopFile;
+		#endif
 		UpperFolderTopFile=0;
 		CorrectPosition();
 	}
@@ -1117,6 +1122,36 @@ size_t FileList::PluginGetPanelItem(int ItemNumber,FarGetPluginPanelItem *Item)
 
 	return result;
 }
+
+#if 1
+//Maximus: FCTL_GETPANELITEMINFO
+size_t FileList::PluginGetPanelItemInfo(int ItemNumber,FarGetPluginPanelItemInfo *Item)
+{
+	size_t result=0;
+
+	if (ListData && ItemNumber<FileCount)
+	{
+		//result=FileListToPluginItem2(ListData[ItemNumber],Item);
+		if (Item && CheckStructSize(Item))
+		{
+			Item->Color=this->GetShowColor(ItemNumber, HIGHLIGHTCOLORTYPE_FILE);
+			if (ItemNumber>=CurTopFile && ItemNumber<=LastBottomFile)
+			{
+				Item->PosX=ListData[ItemNumber]->PosX;
+				Item->PosY=ListData[ItemNumber]->PosY;
+			}
+			else
+			{
+				Item->PosX=0;
+				Item->PosY=0;
+			}
+			result = sizeof(*Item);
+		}
+	}
+
+	return result;
+}
+#endif
 
 size_t FileList::PluginGetSelectedPanelItem(int ItemNumber,FarGetPluginPanelItem *Item)
 {

@@ -83,6 +83,11 @@ struct FileListItem
 
 	string strCustomData;
 
+	#if 1
+	//Maximus: координаты последней отрисовки
+	int PosX, PosY;
+	#endif
+
 	void Clear()
 	{
 		Selected = 0;
@@ -113,6 +118,10 @@ struct FileListItem
 		strName.Clear();
 		strShortName.Clear();
 		ReparseTag=0;
+		#if 1
+		//Maximus: координаты последней отрисовки
+		PosX = PosY = 0;
+		#endif
 		strCustomData.Clear();
 	}
 
@@ -393,6 +402,11 @@ class FileList:public Panel
 		size_t PluginGetPanelItem(int ItemNumber,FarGetPluginPanelItem *Item);
 		size_t PluginGetSelectedPanelItem(int ItemNumber,FarGetPluginPanelItem *Item);
 		void PluginGetColumnTypesAndWidths(string& strColumnTypes,string& strColumnWidths);
+
+		#if 1
+		//Maximus: FCTL_GETPANELITEMINFO
+		size_t PluginGetPanelItemInfo(int ItemNumber,FarGetPluginPanelItemInfo *Item);
+		#endif
 
 		void PluginBeginSelection();
 		void PluginSetSelection(int ItemNumber,bool Selection);
