@@ -258,7 +258,12 @@ FileList::FileList():
 	m_Type=FILE_PANEL;
 	api::GetCurrentDirectory(m_CurDir);
 	strOriginalCurDir = m_CurDir;
+	#if 1
+	//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+	SetTopFile(m_CurFile=0);
+	#else
 	m_CurTopFile=m_CurFile=0;
+	#endif
 	m_ShowShortNames=0;
 	m_SortMode=BY_NAME;
 	m_ReverseSortOrder = false;
@@ -329,9 +334,18 @@ void FileList::Scroll(int offset)
 
 void FileList::CorrectPosition()
 {
+	#if 1
+	//Maximus: функци€ SetTopFile зоветс€ чтобы сбрасывать LastBottomFile
+	#endif
+
 	if (m_ListData.empty())
 	{
+		#if 1
+		//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+		SetTopFile(m_CurFile=0);
+		#else
 		m_CurFile=m_CurTopFile=0;
+		#endif
 		return;
 	}
 
@@ -345,16 +359,36 @@ void FileList::CorrectPosition()
 		m_CurFile = static_cast<int>(m_ListData.size() - 1);
 
 	if (m_CurTopFile<0)
+		#if 1
+		//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+		SetTopFile(0);
+		#else
 		m_CurTopFile=0;
+		#endif
 
 	if (m_CurTopFile > static_cast<int>(m_ListData.size() - 1))
+		#if 1
+		//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+		SetTopFile(static_cast<int>(m_ListData.size() - 1));
+		#else
 		m_CurTopFile = static_cast<int>(m_ListData.size() - 1);
+		#endif
 
 	if (m_CurFile<m_CurTopFile)
+		#if 1
+		//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+		SetTopFile(m_CurFile);
+		#else
 		m_CurTopFile=m_CurFile;
+		#endif
 
 	if (m_CurFile>m_CurTopFile+m_Columns*m_Height-1)
+		#if 1
+		//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+		SetTopFile(m_CurFile-m_Columns*m_Height+1);
+		#else
 		m_CurTopFile=m_CurFile-m_Columns*m_Height+1;
+		#endif
 }
 
 static struct list_less
@@ -2894,12 +2928,22 @@ bool FileList::ChangeDir(const string& NewDir,bool ResolvePath,bool IsUpdated,co
 	if (dot2Present)
 	{
 		GoToFile(strFindDir);
+		#if 1
+		//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+		SetTopFile(UpperFolderTopFile);
+		#else
 		m_CurTopFile=UpperFolderTopFile;
+		#endif
 		UpperFolderTopFile=0;
 		CorrectPosition();
 	}
 	else if (UpdateFlags != UPDATE_KEEP_SELECTION)
+		#if 1
+		//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+		SetTopFile(m_CurFile=0);
+		#else
 		m_CurFile=m_CurTopFile=0;
+		#endif
 
 	if (GetFocus())
 	{
@@ -3449,7 +3493,12 @@ int FileList::FindPartName(const string& Name,int Next,int Direct)
 				if (!DirFind || (m_ListData[I].FileAttr & FILE_ATTRIBUTE_DIRECTORY))
 				{
 					m_CurFile=I;
+					#if 1
+					//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+					SetTopFile(m_CurFile-(m_Y2-m_Y1)/2);
+					#else
 					m_CurTopFile=m_CurFile-(m_Y2-m_Y1)/2;
+					#endif
 					ShowFileList(TRUE);
 					return TRUE;
 				}
@@ -3466,7 +3515,12 @@ int FileList::FindPartName(const string& Name,int Next,int Direct)
 				if (!DirFind || (m_ListData[I].FileAttr & FILE_ATTRIBUTE_DIRECTORY))
 				{
 					m_CurFile=I;
+					#if 1
+					//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+					SetTopFile(m_CurFile-(m_Y2-m_Y1)/2);
+					#else
 					m_CurTopFile=m_CurFile-(m_Y2-m_Y1)/2;
+					#endif
 					ShowFileList(TRUE);
 					return TRUE;
 				}
@@ -3505,7 +3559,12 @@ int FileList::FindPartName(const string& Name,int Next,int Direct)
 				if (!DirFind || (m_ListData[I].FileAttr & FILE_ATTRIBUTE_DIRECTORY))
 				{
 					m_CurFile=I;
+					#if 1
+					//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+					SetTopFile(m_CurFile-(m_Y2-m_Y1)/2);
+					#else
 					m_CurTopFile=m_CurFile-(m_Y2-m_Y1)/2;
+					#endif
 					ShowFileList(TRUE);
 					return TRUE;
 				}
@@ -3522,7 +3581,12 @@ int FileList::FindPartName(const string& Name,int Next,int Direct)
 				if (!DirFind || (m_ListData[I].FileAttr & FILE_ATTRIBUTE_DIRECTORY))
 				{
 					m_CurFile=I;
+					#if 1
+					//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+					SetTopFile(m_CurFile-(m_Y2-m_Y1)/2);
+					#else
 					m_CurTopFile=m_CurFile-(m_Y2-m_Y1)/2;
+					#endif
 					ShowFileList(TRUE);
 					return TRUE;
 				}
@@ -5445,7 +5509,12 @@ void FileList::PopPrevData(const string& DefaultName,bool Closed,bool UsePrev,bo
 		else
 			GoToFile(strName);
 
+		#if 1
+		//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+		SetTopFile(UpperFolderTopFile);
+		#else
 		m_CurTopFile=UpperFolderTopFile;
+		#endif
 		UpperFolderTopFile=0;
 		CorrectPosition();
 	}
@@ -5453,7 +5522,12 @@ void FileList::PopPrevData(const string& DefaultName,bool Closed,bool UsePrev,bo
 	   доделка про несброс выделени€ при неудаче SetDirectory
 	*/
 	else if (SetDirectorySuccess)
+		#if 1
+		//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+		SetTopFile(m_CurFile=0);
+		#else
 		m_CurFile=m_CurTopFile=0;
+		#endif
 }
 
 int FileList::FileNameToPluginItem(const string& Name,PluginPanelItem *pi)
@@ -6305,6 +6379,36 @@ size_t FileList::PluginGetPanelItem(int ItemNumber,FarGetPluginPanelItem *Item)
 
 	return result;
 }
+
+#if 1
+//Maximus: FCTL_GETPANELITEMINFO
+size_t FileList::PluginGetPanelItemInfo(int ItemNumber,FarGetPluginPanelItemInfo *Item)
+{
+	size_t result=0;
+
+	if (static_cast<size_t>(ItemNumber) < m_ListData.size())
+	{
+		//result=FileListToPluginItem2(ListData[ItemNumber],Item);
+		if (Item && CheckStructSize(Item))
+		{
+			Item->Color=this->GetShowColor(ItemNumber, true);
+			if (ItemNumber>=m_CurTopFile && ItemNumber<=m_LastBottomFile)
+			{
+				Item->PosX=m_ListData[ItemNumber].PosX;
+				Item->PosY=m_ListData[ItemNumber].PosY;
+			}
+			else
+			{
+				Item->PosX=0;
+				Item->PosY=0;
+			}
+			result = sizeof(*Item);
+		}
+	}
+
+	return result;
+}
+#endif
 
 size_t FileList::PluginGetSelectedPanelItem(int ItemNumber,FarGetPluginPanelItem *Item)
 {
