@@ -360,6 +360,12 @@ private:
 	void FastFindProcessName(Edit *FindEdit,const string& Src,string &strLastName, string &strName);
 	void DragMessage(int X,int Y,int Move);
 
+	#if 1
+	//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+protected:
+		void SetTopFile(int NewTopFile) { LastBottomFile=-1; CurTopFile=NewTopFile; };
+	#endif
+
 protected:
 	PanelViewSettings ViewSettings;
 	string strCurDir;
@@ -372,6 +378,10 @@ protected:
 	bool SortGroups;
 	int PrevViewMode,ViewMode;
 	int CurTopFile;
+	#if 1
+	//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+	int LastBottomFile;
+	#endif
 	int CurFile;
 	bool ShowShortNames;
 	bool NumericSort;

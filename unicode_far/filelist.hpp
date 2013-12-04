@@ -80,6 +80,11 @@ struct FileListItem:public Panel::panelitem
 
 	string strCustomData;
 
+	#if 1
+	//Maximus: координаты последней отрисовки
+	int PosX, PosY;
+	#endif
+
 	~FileListItem();
 
 private:
@@ -111,6 +116,10 @@ private:
 		AllocationSize(0),
 		StreamsSize(0),
 		ReparseTag(0)
+		#if 1
+		//Maximus: координаты последней отрисовки
+		, PosX(0), PosY(0)
+		#endif
 	{
 	}
 	friend class FileList;
@@ -223,6 +232,10 @@ public:
 	size_t PluginGetPanelItem(int ItemNumber,FarGetPluginPanelItem *Item);
 	size_t PluginGetSelectedPanelItem(int ItemNumber,FarGetPluginPanelItem *Item);
 	void PluginGetColumnTypesAndWidths(string& strColumnTypes,string& strColumnWidths);
+	#if 1
+	//Maximus: FCTL_GETPANELITEMINFO
+	size_t PluginGetPanelItemInfo(int ItemNumber,FarGetPluginPanelItemInfo *Item);
+	#endif
 	void PluginBeginSelection();
 	void PluginSetSelection(int ItemNumber,bool Selection);
 	void PluginClearSelection(int SelectedItemNumber);

@@ -155,7 +155,12 @@ TreeList::TreeList(bool IsPanel):
 	SaveWorkDir(0)
 {
 	Type=TREE_PANEL;
+	#if 1
+	//Maximus: Последний видимый на панели элемент (при последней отрисовке панели), для возврата координат в API
+	SetTopFile(CurFile=0);
+	#else
 	CurFile=CurTopFile=0;
+	#endif
 	Flags.Set(FTREELIST_UPDATEREQUIRED);
 	Flags.Clear(FTREELIST_TREEISPREPARED);
 	Flags.Change(FTREELIST_ISPANEL,IsPanel);
@@ -1202,16 +1207,30 @@ void TreeList::Scroll(int Count)
 
 void TreeList::CorrectPosition()
 {
+	#if 1
+	//Maximus: функция SetTopFile зовется чтобы сбрасывать LastBottomFile
+	#endif
+
 	if (ListData.empty())
 	{
+		#if 1
+		//Maximus: Последний видимый на панели элемент (при последней отрисовке панели), для возврата координат в API
+		SetTopFile(CurFile=0);
+		#else
 		CurFile=CurTopFile=0;
+		#endif
 		return;
 	}
 
 	int Height=Y2-Y1-3-(ModalMode);
 
 	if (CurTopFile+Height > static_cast<int>(ListData.size()))
+		#if 1
+		//Maximus: Последний видимый на панели элемент (при последней отрисовке панели), для возврата координат в API
+		SetTopFile(static_cast<int>(ListData.size() - Height));
+		#else
 		CurTopFile = static_cast<int>(ListData.size() - Height);
+		#endif
 
 	if (CurFile<0)
 		CurFile=0;
@@ -1220,16 +1239,36 @@ void TreeList::CorrectPosition()
 		CurFile = static_cast<int>(ListData.size() - 1);
 
 	if (CurTopFile<0)
+		#if 1
+		//Maximus: Последний видимый на панели элемент (при последней отрисовке панели), для возврата координат в API
+		SetTopFile(0);
+		#else
 		CurTopFile=0;
+		#endif
 
 	if (CurTopFile > static_cast<int>(ListData.size() - 1))
+		#if 1
+		//Maximus: Последний видимый на панели элемент (при последней отрисовке панели), для возврата координат в API
+		SetTopFile(static_cast<int>(ListData.size() - 1));
+		#else
 		CurTopFile = static_cast<int>(ListData.size() - 1);
+		#endif
 
 	if (CurFile<CurTopFile)
+		#if 1
+		//Maximus: Последний видимый на панели элемент (при последней отрисовке панели), для возврата координат в API
+		SetTopFile(CurFile);
+		#else
 		CurTopFile=CurFile;
+		#endif
 
 	if (CurFile>CurTopFile+Height-1)
+		#if 1
+		//Maximus: Последний видимый на панели элемент (при последней отрисовке панели), для возврата координат в API
+		SetTopFile(CurFile-(Height-1));
+		#else
 		CurTopFile=CurFile-(Height-1);
+		#endif
 }
 
 bool TreeList::SetCurDir(const string& NewDir,bool ClosePanel,bool /*IsUpdated*/)
@@ -1260,7 +1299,12 @@ int TreeList::SetDirPosition(const string& NewDir)
 		{
 			WorkDir = i;
 			CurFile = static_cast<int>(i);
+			#if 1
+			//Maximus: Последний видимый на панели элемент (при последней отрисовке панели), для возврата координат в API
+			SetTopFile(CurFile-(Y2-Y1-1)/2);
+			#else
 			CurTopFile=CurFile-(Y2-Y1-1)/2;
+			#endif
 			CorrectPosition();
 			return TRUE;
 		}
@@ -1534,7 +1578,12 @@ int TreeList::FindPartName(const string& Name,int Next,int Direct,int ExcludeSet
 		if (CmpName(strMask.data(),ListData[i]->strName.data(),true,(i==CurFile)))
 		{
 			CurFile=i;
+			#if 1
+			//Maximus: Последний видимый на панели элемент (при последней отрисовке панели), для возврата координат в API
+			SetTopFile(CurFile-(Y2-Y1-1)/2);
+			#else
 			CurTopFile=CurFile-(Y2-Y1-1)/2;
+			#endif
 			DisplayTree(TRUE);
 			return TRUE;
 		}
@@ -1545,7 +1594,12 @@ int TreeList::FindPartName(const string& Name,int Next,int Direct,int ExcludeSet
 		if (CmpName(strMask.data(),ListData[i]->strName.data(),true))
 		{
 			CurFile=static_cast<int>(i);
+			#if 1
+			//Maximus: Последний видимый на панели элемент (при последней отрисовке панели), для возврата координат в API
+			SetTopFile(CurFile-(Y2-Y1-1)/2);
+			#else
 			CurTopFile=CurFile-(Y2-Y1-1)/2;
+			#endif
 			DisplayTree(TRUE);
 			return TRUE;
 		}

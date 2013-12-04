@@ -219,7 +219,12 @@ FileList::FileList():
 	Type=FILE_PANEL;
 	api::GetCurrentDirectory(strCurDir);
 	strOriginalCurDir = strCurDir;
+	#if 1
+	//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+	SetTopFile(CurFile=0);
+	#else
 	CurTopFile=CurFile=0;
+	#endif
 	ShowShortNames=0;
 	SortMode=BY_NAME;
 	ReverseSortOrder = false;
@@ -296,14 +301,28 @@ void FileList::Scroll(int Count)
 
 void FileList::CorrectPosition()
 {
+	#if 1
+	//Maximus: функци€ SetTopFile зоветс€ чтобы сбрасывать LastBottomFile
+	#endif
+
 	if (ListData.empty())
 	{
+		#if 1
+		//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+		SetTopFile(CurFile=0);
+		#else
 		CurFile=CurTopFile=0;
+		#endif
 		return;
 	}
 
 	if (CurTopFile+Columns*Height > static_cast<int>(ListData.size()))
+		#if 1
+		//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+		SetTopFile(static_cast<int>(ListData.size() - Columns * Height));
+		#else
 		CurTopFile = static_cast<int>(ListData.size() - Columns * Height);
+		#endif
 
 	if (CurFile<0)
 		CurFile=0;
@@ -312,16 +331,36 @@ void FileList::CorrectPosition()
 		CurFile = static_cast<int>(ListData.size() - 1);
 
 	if (CurTopFile<0)
+		#if 1
+		//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+		SetTopFile(0);
+		#else
 		CurTopFile=0;
+		#endif
 
 	if (CurTopFile > static_cast<int>(ListData.size() - 1))
+		#if 1
+		//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+		SetTopFile(static_cast<int>(ListData.size() - 1));
+		#else
 		CurTopFile = static_cast<int>(ListData.size() - 1);
+		#endif
 
 	if (CurFile<CurTopFile)
+		#if 1
+		//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+		SetTopFile(CurFile);
+		#else
 		CurTopFile=CurFile;
+		#endif
 
 	if (CurFile>CurTopFile+Columns*Height-1)
+		#if 1
+		//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+		SetTopFile(CurFile-Columns*Height+1);
+		#else
 		CurTopFile=CurFile-Columns*Height+1;
+		#endif
 }
 
 inline bool less_opt(bool less)
@@ -2863,12 +2902,22 @@ bool FileList::ChangeDir(const string& NewDir,bool ResolvePath,bool IsUpdated,co
 	if (dot2Present)
 	{
 		GoToFile(strFindDir);
+		#if 1
+		//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+		SetTopFile(UpperFolderTopFile);
+		#else
 		CurTopFile=UpperFolderTopFile;
+		#endif
 		UpperFolderTopFile=0;
 		CorrectPosition();
 	}
 	else if (UpdateFlags != UPDATE_KEEP_SELECTION)
+		#if 1
+		//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+		SetTopFile(CurFile=0);
+		#else
 		CurFile=CurTopFile=0;
+		#endif
 
 	if (GetFocus())
 	{
@@ -3427,7 +3476,12 @@ int FileList::FindPartName(const string& Name,int Next,int Direct,int ExcludeSet
 				if (!DirFind || (ListData[I]->FileAttr & FILE_ATTRIBUTE_DIRECTORY))
 				{
 					CurFile=I;
+					#if 1
+					//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+					SetTopFile(CurFile-(Y2-Y1)/2);
+					#else
 					CurTopFile=CurFile-(Y2-Y1)/2;
+					#endif
 					ShowFileList(TRUE);
 					return TRUE;
 				}
@@ -3444,7 +3498,12 @@ int FileList::FindPartName(const string& Name,int Next,int Direct,int ExcludeSet
 				if (!DirFind || (ListData[I]->FileAttr & FILE_ATTRIBUTE_DIRECTORY))
 				{
 					CurFile=I;
+					#if 1
+					//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+					SetTopFile(CurFile-(Y2-Y1)/2);
+					#else
 					CurTopFile=CurFile-(Y2-Y1)/2;
+					#endif
 					ShowFileList(TRUE);
 					return TRUE;
 				}
@@ -3488,7 +3547,12 @@ int FileList::FindPartName(const string& Name,int Next,int Direct,int ExcludeSet
 				if (!DirFind || (ListData[I]->FileAttr & FILE_ATTRIBUTE_DIRECTORY))
 				{
 					CurFile=I;
+					#if 1
+					//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+					SetTopFile(CurFile-(Y2-Y1)/2);
+					#else
 					CurTopFile=CurFile-(Y2-Y1)/2;
+					#endif
 					ShowFileList(TRUE);
 					return TRUE;
 				}
@@ -3505,7 +3569,12 @@ int FileList::FindPartName(const string& Name,int Next,int Direct,int ExcludeSet
 				if (!DirFind || (ListData[I]->FileAttr & FILE_ATTRIBUTE_DIRECTORY))
 				{
 					CurFile=I;
+					#if 1
+					//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+					SetTopFile(CurFile-(Y2-Y1)/2);
+					#else
 					CurTopFile=CurFile-(Y2-Y1)/2;
+					#endif
 					ShowFileList(TRUE);
 					return TRUE;
 				}

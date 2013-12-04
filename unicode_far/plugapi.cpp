@@ -1253,6 +1253,10 @@ intptr_t WINAPI apiPanelControl(HANDLE hPlugin,FILE_CONTROL_COMMANDS Command,int
 			Global->g_strDirToSet = NullToEmpty((wchar_t *)Param2);
 		case FCTL_GETPANELINFO:
 		case FCTL_GETPANELITEM:
+		#if 1
+		//Maximus: цвет и позиция
+		case FCTL_GETPANELITEMINFO:
+		#endif
 		case FCTL_GETSELECTEDPANELITEM:
 		case FCTL_GETCURRENTPANELITEM:
 		case FCTL_GETPANELDIRECTORY:
