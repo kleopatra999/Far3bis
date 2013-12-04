@@ -2340,6 +2340,15 @@ int Panel::SetPluginCommand(int Command,int Param1,void* Param2)
 			break;
 		}
 
+		#if 1
+		//Maximus:
+		case FCTL_GETPANELITEMINFO:
+		{
+			Result=(int)((FileList*)this)->PluginGetPanelItemInfo(Param1,(FarGetPluginPanelItemInfo*)Param2);
+			break;
+		}
+		#endif
+
 		case FCTL_GETSELECTEDPANELITEM:
 		{
 			if (GetType() == FILE_PANEL && CheckNullOrStructSize(static_cast<FarGetPluginPanelItem*>(Param2)))
@@ -2415,7 +2424,12 @@ int Panel::SetPluginCommand(int Command,int Param1,void* Param2)
 			if (CheckStructSize(Info))
 			{
 				m_CurFile=static_cast<int>(Info->CurrentItem);
+				#if 1
+				//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+				SetTopFile(static_cast<int>(Info->TopPanelItem));
+				#else
 				m_CurTopFile=static_cast<int>(Info->TopPanelItem);
+				#endif
 			}
 
 			// $ 12.05.2001 DJ перерисовываемс€ только в том случае, если мы - текущий фрейм
