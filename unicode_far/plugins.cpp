@@ -2564,6 +2564,15 @@ void PluginManager::ReloadLanguage()
 	for (size_t I=0; I<PluginsCount; I++)
 	{
 		PData = PluginsData[I];
+#ifdef _DEBUG
+		//Maximus: для отладки
+		// Если плагин еще не загружен - не будем закрывать LangData
+		// в принципе, это не очень хорошо, поскольку останутся старые (на старом языке)
+		// кешированные строки для меню плагинов, конфигураций и т.п.
+		// Но для отладки - самое то, не будем требовать загрузку всех подряд плагинов
+		if (PData->m_hModule == NULL)
+			continue;
+#endif
 		PData->CloseLang();
 	}
 
@@ -2576,6 +2585,15 @@ void PluginManager::DiscardCache()
 	for (size_t I=0; I<PluginsCount; I++)
 	{
 		Plugin *pPlugin = PluginsData[I];
+#ifdef _DEBUG
+		//Maximus: для отладки
+		// Если плагин еще не загружен - не будем закрывать LangData
+		// в принципе, это не очень хорошо, поскольку останутся старые (на старом языке)
+		// кешированные строки для меню плагинов, конфигураций и т.п.
+		// Но для отладки - самое то, не будем требовать загрузку всех подряд плагинов
+		if (pPlugin->m_hModule == NULL)
+			continue;
+#endif
 		pPlugin->Load();
 	}
 
