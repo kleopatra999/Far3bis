@@ -382,6 +382,12 @@ private:
 
 	static void DragMessage(int X,int Y,int Move);
 
+	#if 1
+	//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+protected:
+		void SetTopFile(int NewTopFile) { m_LastBottomFile=-1; m_CurTopFile=NewTopFile; };
+	#endif
+
 protected:
 	FilePanels* m_parent;
 	PanelViewSettings m_ViewSettings;
@@ -396,6 +402,10 @@ protected:
 	int m_PrevViewMode;
 	int m_ViewMode;
 	int m_CurTopFile;
+	#if 1
+	//Maximus: ѕоследний видимый на панели элемент (при последней отрисовке панели), дл€ возврата координат в API
+	int m_LastBottomFile;
+	#endif
 	int m_CurFile;
 	bool m_ShowShortNames;
 	bool m_NumericSort;

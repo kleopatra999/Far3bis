@@ -81,6 +81,10 @@ struct FileListItem: NonCopyable
 
 	string strCustomData;
 
+	#if 1
+	//Maximus: координаты последней отрисовки
+	int PosX, PosY;
+	#endif
 	FileListItem():
 		Selected(),
 		PrevSelected(),
@@ -108,6 +112,10 @@ struct FileListItem: NonCopyable
 		AllocationSize(),
 		StreamsSize(),
 		ReparseTag()
+		#if 1
+		//Maximus: координаты последней отрисовки
+		, PosX(), PosY()
+		#endif
 	{
 	}
 
@@ -138,6 +146,10 @@ struct FileListItem: NonCopyable
 		AllocationSize(),
 		StreamsSize(),
 		ReparseTag()
+		#if 1
+		//Maximus: координаты последней отрисовки
+		, PosX(), PosY()
+		#endif
 	{
 		*this = std::move(rhs);
 	}
@@ -178,6 +190,11 @@ struct FileListItem: NonCopyable
 		strShortName.swap(rhs.strShortName);
 		std::swap(ReparseTag, rhs.ReparseTag);
 		strCustomData.swap(rhs.strCustomData);
+		#if 1
+		//Maximus: координаты последней отрисовки
+		std::swap(PosX, rhs.PosX);
+		std::swap(PosY, rhs.PosY);
+		#endif
 	}
 };
 
@@ -339,6 +356,10 @@ public:
 	size_t PluginGetPanelItem(int ItemNumber,FarGetPluginPanelItem *Item);
 	size_t PluginGetSelectedPanelItem(int ItemNumber,FarGetPluginPanelItem *Item);
 	void PluginGetColumnTypesAndWidths(string& strColumnTypes,string& strColumnWidths);
+	#if 1
+	//Maximus: FCTL_GETPANELITEMINFO
+	size_t PluginGetPanelItemInfo(int ItemNumber,FarGetPluginPanelItemInfo *Item);
+	#endif
 	void PluginBeginSelection();
 	void PluginSetSelection(int ItemNumber,bool Selection);
 	void PluginClearSelection(int SelectedItemNumber);
