@@ -581,6 +581,29 @@ void PluginManager::LoadPlugins()
 	}
 
 	m_PluginsLoaded = true;
+
+	#if 1
+	//Maximus: Оптимизация колонки C0
+
+	//Maximus: Иначе после загрузки Far в панелях не загрузятся колонки C0
+	if (HasGetCustomData())
+	{
+		#if 0
+		Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
+		if (ActivePanel->GetType()==FILE_PANEL && ActivePanel->GetMode()==NORMAL_PANEL && ActivePanel->IsColumnDisplayed(CUSTOM_COLUMN0))
+		{
+			ActivePanel->ClearCustomData();
+			ActivePanel->Redraw();
+		}
+		Panel *AnotherPanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
+		if (AnotherPanel->GetType()==FILE_PANEL && AnotherPanel->GetMode()==NORMAL_PANEL && AnotherPanel->IsColumnDisplayed(CUSTOM_COLUMN0))
+		{
+			AnotherPanel->ClearCustomData();
+			AnotherPanel->Redraw();
+		}
+		#endif
+	}
+	#endif
 }
 
 /* $ 01.09.2000 tran
@@ -2758,6 +2781,22 @@ PluginHandle* PluginManager::Open(Plugin *pPlugin,int OpenFrom,const GUID& Guid,
 
 	return nullptr;
 }
+
+#if 1
+//Maximus: оптимизация колонки C0
+bool PluginManager::HasGetCustomData()
+{
+	bool result = false;
+
+	std::for_each(CONST_RANGE(SortedPlugins, i)
+	{
+		if (i->HasGetCustomData())
+			result = true;
+	});
+
+	return result;
+}
+#endif
 
 string PluginManager::GetCustomData(const string& Name) const
 {

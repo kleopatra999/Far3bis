@@ -677,6 +677,22 @@ void FileList::SortFileList(int KeepPosition)
 
 		hSortPlugin=(m_PanelMode==PLUGIN_PANEL && m_hPlugin && m_hPlugin->pPlugin->HasCompare()) ? m_hPlugin:nullptr;
 
+		#if 1
+		//Maximus: оптимизация колонки C0
+		// Для файловых панелей в режиме сортировки по C0 нужно убедиться, что данные загружены
+		if (m_PanelMode!=PLUGIN_PANEL && m_SortMode==BY_CUSTOMDATA)
+		{
+			std::for_each(RANGE(m_ListData, i)
+			{
+				if (!i.CustomDataLoaded)
+				{
+					i.strCustomData = Global->CtrlObject->Plugins->GetCustomData(i.strName);
+					i.CustomDataLoaded = true;
+				}
+			});
+		}
+		#endif
+
 		// ЭТО ЕСТЬ УЗКОЕ МЕСТО ДЛЯ СКОРОСТНЫХ ХАРАКТЕРИСТИК Far Manager
 		// при считывании дирректории
 
@@ -6822,7 +6838,12 @@ void FileList::ReadFileNames(int KeepSelection, int UpdateEvenIfPanelInvisible, 
 	api::enum_file Find(strFind, true);
 	DWORD FindErrorCode = ERROR_SUCCESS;
 	bool UseFilter=m_Filter->IsEnabledOnPanel();
+	#if 1
+	//Maximus: оптимизация колонки C0
+	bool ReadCustomData=(IsColumnDisplayed(CUSTOM_COLUMN0)!=0 && (m_ViewSettings.Flags&PVS_PRELOADC0DATA)) || (m_SortMode==BY_CUSTOMDATA);
+	#else
 	bool ReadCustomData=IsColumnDisplayed(CUSTOM_COLUMN0)!=0;
+	#endif
 
 	DWORD StartTime = GetTickCount();
 
@@ -6885,7 +6906,15 @@ void FileList::ReadFileNames(int KeepSelection, int UpdateEvenIfPanelInvisible, 
 			}
 
 			if (ReadCustomData)
+			#if 1
+			//Maximus: оптимизация колонки C0
+			{
 				NewItem.strCustomData = Global->CtrlObject->Plugins->GetCustomData(NewItem.strName);
+				NewItem.CustomDataLoaded = true;
+			}
+			#else
+				NewItem.strCustomData = Global->CtrlObject->Plugins->GetCustomData(NewItem.strName);
+			#endif
 
 			if (!(fdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 				TotalFileCount++;
@@ -8635,6 +8664,16 @@ void FileList::ShowList(int ShowStatus,int StartColumn)
 
 					if (!ColumnData)
 					{
+						#if 1
+						//Maximus: оптимизация колонки C0
+						auto& item = m_ListData[ListPos];
+						if (m_PanelMode!=PLUGIN_PANEL && !item.CustomDataLoaded)
+						{
+							//Maximus: BUGBUG: требуется установка текущей папки для панели (это может быть пассивная панель!)
+							item.strCustomData = Global->CtrlObject->Plugins->GetCustomData(item.strName);
+							item.CustomDataLoaded = true;
+						}
+						#endif
 						ColumnData=m_ListData[ListPos].strCustomData.data();//L"";
 					}
 
@@ -9233,5 +9272,19 @@ int FileList::GetPanelStatusHeight()
 		}
 	}
 	return Count+2; // <Number of status lines> + 1 (delimiter line)
+}
+#endif
+
+#if 1
+//Maximus: Оптимизация колонки C0
+void FileList::ClearCustomData()
+{
+	if (GetType()==FILE_PANEL && GetMode()==NORMAL_PANEL)
+	{
+		std::for_each(RANGE(m_ListData, i)
+		{
+			i.ClearCustomData();
+		});
+	}
 }
 #endif
