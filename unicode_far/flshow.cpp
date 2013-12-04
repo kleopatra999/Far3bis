@@ -1079,7 +1079,12 @@ void FileList::ShowList(int ShowStatus,int StartColumn)
 							const wchar_t *NamePtr = ShowShortNames && !ListData[ListPos]->strShortName.empty() && !ShowStatus ? ListData[ListPos]->strShortName.data():ListData[ListPos]->strName.data();
 
 							string strNameCopy;
+							#if 1
+							//Maximus: плагин сказал, что у его элементов НЕТ "расширений"
+							if (!(ListData[ListPos]->FileAttr & FILE_ATTRIBUTE_DIRECTORY) && !(ListData[ListPos]->UserFlags & PPIF_HASNOTEXTENSION) && (ViewFlags & COLUMN_NOEXTENSION))
+							#else
 							if (!(ListData[ListPos]->FileAttr & FILE_ATTRIBUTE_DIRECTORY) && (ViewFlags & COLUMN_NOEXTENSION))
+							#endif
 							{
 								const wchar_t *ExtPtr = PointToExt(NamePtr);
 								if (ExtPtr)
@@ -1204,7 +1209,12 @@ void FileList::ShowList(int ShowStatus,int StartColumn)
 						case EXTENSION_COLUMN:
 						{
 							const wchar_t *ExtPtr = nullptr;
+							#if 1
+							//Maximus: плагин сказал, что у его элементов НЕТ "расширений"
+							if (!(ListData[ListPos]->FileAttr & FILE_ATTRIBUTE_DIRECTORY) && !(ListData[ListPos]->UserFlags & PPIF_HASNOTEXTENSION))
+							#else
 							if (!(ListData[ListPos]->FileAttr & FILE_ATTRIBUTE_DIRECTORY))
+							#endif
 							{
 								const wchar_t *NamePtr = ShowShortNames && !ListData[ListPos]->strShortName.empty() && !ShowStatus ? ListData[ListPos]->strShortName.data():ListData[ListPos]->strName.data();
 								ExtPtr = PointToExt(NamePtr);
