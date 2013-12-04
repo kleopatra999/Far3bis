@@ -59,6 +59,10 @@ enum
 	PVS_FOLDERUPPERCASE       = 0x00000008,
 	PVS_FILELOWERCASE         = 0x00000010,
 	PVS_FILEUPPERTOLOWERCASE  = 0x00000020,
+	#if 1
+	//Maximus: оптимизация колонки C0
+	PVS_PRELOADC0DATA         = 0x00000040,
+	#endif
 };
 
 enum
@@ -333,4 +337,9 @@ class Panel:public ScreenObject
 		int SetCurPath();
 
 		BOOL NeedUpdatePanel(Panel *AnotherPanel);
+
+		#if 1
+		//Maximus: оптимизация колонки C0
+		virtual void ClearCustomData() {};
+		#endif
 };

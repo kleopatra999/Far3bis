@@ -84,6 +84,17 @@ struct FileListItem
 	string strCustomData;
 
 	#if 1
+	//Maximus: оптимизация колонки C0
+	bool CustomDataLoaded;
+
+	void ClearCustomData()
+	{
+		strCustomData.Clear();
+		CustomDataLoaded=false;
+	}
+	#endif
+
+	#if 1
 	//Maximus: координаты последней отрисовки
 	int PosX, PosY;
 	#endif
@@ -122,7 +133,12 @@ struct FileListItem
 		//Maximus: координаты последней отрисовки
 		PosX = PosY = 0;
 		#endif
+		#if 1
+		//Maximus: оптимизация колонки C0
+		ClearCustomData();
+		#else
 		strCustomData.Clear();
+		#endif
 	}
 
 	FileListItem& operator=(const FileListItem &fliCopy)
@@ -158,6 +174,10 @@ struct FileListItem
 			strShortName = fliCopy.strShortName;
 			ReparseTag = fliCopy.ReparseTag;
 			strCustomData = fliCopy.strCustomData;
+			#if 1
+			//Maximus: оптимизация колонки C0
+			CustomDataLoaded = fliCopy.CustomDataLoaded;
+			#endif
 		}
 
 		return *this;
@@ -441,4 +461,9 @@ class FileList:public Panel
 		static void PluginToFileListItem(PluginPanelItem *pi,FileListItem *fi);
 		static bool IsModeFullScreen(int Mode);
 		static string &AddPluginPrefix(FileList *SrcPanel,string &strPrefix);
+
+		#if 1
+		//Maximus: оптимизация колонки C0
+		virtual void ClearCustomData();
+		#endif
 };

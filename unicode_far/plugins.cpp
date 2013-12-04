@@ -822,6 +822,23 @@ void PluginManager::LoadPlugins()
 
 	Flags.Set(PSIF_PLUGINSLOADDED);
 	far_qsort(PluginsData, PluginsCount, sizeof(*PluginsData), PluginsSort);
+
+	//Maximus: Иначе после загрузки Far в панелях не загрузятся колонки C0
+	if (HasGetCustomData())
+	{
+		Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
+		if (ActivePanel->GetType()==FILE_PANEL && ActivePanel->GetMode()==NORMAL_PANEL && ActivePanel->IsColumnDisplayed(CUSTOM_COLUMN0))
+		{
+			ActivePanel->ClearCustomData();
+			ActivePanel->Redraw();
+		}
+		Panel *AnotherPanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
+		if (AnotherPanel->GetType()==FILE_PANEL && AnotherPanel->GetMode()==NORMAL_PANEL && AnotherPanel->IsColumnDisplayed(CUSTOM_COLUMN0))
+		{
+			AnotherPanel->ClearCustomData();
+			AnotherPanel->Redraw();
+		}
+	}
 }
 
 /* $ 01.09.2000 tran
@@ -3081,9 +3098,38 @@ HANDLE PluginManager::Open(Plugin *pPlugin,int OpenFrom,const GUID& Guid,intptr_
 	return hPlugin;
 }
 
+#if 1
+//Maximus: оптимизация колонки C0
+bool PluginManager::HasGetCustomData()
+{
+	for (size_t i=0; i<PluginsCount; i++)
+	{
+		if (PluginsData[i]->HasGetCustomData())
+		{
+			return true;
+		}
+	}
+	return false;
+}
+#endif
+
 void PluginManager::GetCustomData(FileListItem *ListItem)
 {
 	NTPath FilePath(ListItem->strName);
+
+#ifdef _DEBUG
+	//Maximus: для отладки
+	_ASSERTE(ListItem->CustomDataLoaded==false);
+	//HANDLE hFile = apiCreateFile(FilePath.CPtr(), FILE_READ_DATA, FILE_SHARE_READ|FILE_SHARE_WRITE, nullptr, OPEN_EXISTING);
+	//if (hFile == INVALID_HANDLE_VALUE)
+	//{
+	//	_ASSERTE(hFile!=INVALID_HANDLE_VALUE);
+	//}
+	//else
+	//{
+	//	CloseHandle(hFile);
+	//}
+#endif
 
 	for (size_t i=0; i<PluginsCount; i++)
 	{
@@ -3101,6 +3147,11 @@ void PluginManager::GetCustomData(FileListItem *ListItem)
 				pPlugin->FreeCustomData(CustomData);
 		}
 	}
+
+	#if 1
+	//Maximus: оптимизация колонки C0
+	ListItem->CustomDataLoaded = true;
+	#endif
 }
 
 const GUID& PluginManager::GetGUID(HANDLE hPlugin)

@@ -263,7 +263,12 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 	::FindFile Find(strFind, true);
 	DWORD FindErrorCode = ERROR_SUCCESS;
 	bool UseFilter=Filter->IsEnabledOnPanel();
+	#if 1
+	//Maximus: оптимизация колонки C0
+	bool ReadCustomData=(IsColumnDisplayed(CUSTOM_COLUMN0)!=0 && (ViewSettings.Flags&PVS_PRELOADC0DATA)) || (SortMode==BY_CUSTOMDATA);
+	#else
 	bool ReadCustomData=IsColumnDisplayed(CUSTOM_COLUMN0)!=0;
+	#endif
 
 	DWORD StartTime = GetTickCount();
 

@@ -419,8 +419,24 @@ void FileList::ShowFileList(int Fast)
 		ShowTotalSize(Info);
 	}
 
+	#if 1
+	//Maximus: оптимизация колонки C0
+	string strLastDir;
+	if (GetMode()!=PLUGIN_PANEL && IsColumnDisplayed(CUSTOM_COLUMN0))
+	{
+		apiGetCurrentDirectory(strLastDir);
+		apiSetCurrentDirectory(strCurDir);
+	}
+	#endif
+
 	ShowList(FALSE,0);
 	ShowSelectedSize();
+
+	#if 1
+	//Maximus: оптимизация колонки C0
+	if (!strLastDir.IsEmpty())
+		apiSetCurrentDirectory(strLastDir);
+	#endif
 
 	if (Opt.ShowPanelScrollbar)
 	{
@@ -1025,6 +1041,14 @@ void FileList::ShowList(int ShowStatus,int StartColumn)
 
 					if (!ColumnData)
 					{
+						#if 1
+						//Maximus: оптимизация колонки C0
+						if (PanelMode!=PLUGIN_PANEL && !ListData[ListPos]->CustomDataLoaded)
+						{
+							//Maximus: BUGBUG: требуется установка текущей папки для панели (это может быть пассивная панель!)
+							CtrlObject->Plugins->GetCustomData(ListData[ListPos]);
+						}
+						#endif
 						ColumnData=ListData[ListPos]->strCustomData;//L"";
 					}
 
@@ -1464,3 +1488,17 @@ int FileList::IsColumnDisplayed(int Type)
 
 	return FALSE;
 }
+
+#if 1
+//Maximus: Оптимизация колонки C0
+void FileList::ClearCustomData()
+{
+	if (GetType()==FILE_PANEL && GetMode()==NORMAL_PANEL && ListData)
+	{
+		for (int i=0; i < FileCount; i++)
+		{
+			ListData[i]->ClearCustomData();
+		}
+	}
+}
+#endif

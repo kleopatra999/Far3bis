@@ -315,6 +315,10 @@ class PluginManager
 		int ProcessConsoleInput(ProcessConsoleInputInfo *Info);
 #endif
 		void GetCustomData(FileListItem *ListItem);
+		#if 1
+		//Maximus: оптимизация колонки C0
+		bool HasGetCustomData();
+		#endif
 
 		friend class Plugin;
 };
