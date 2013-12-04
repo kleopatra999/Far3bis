@@ -93,11 +93,12 @@ void Frame::OnChangeFocus(int focus)
 			iModal=iModal->NextModal;
 		}
 
-		#if 1
+		#if 0
+		//131204 - возможно не требуется?
 		//Maximus: артефакты отрисовки
 		// Иначе в некоторых случаях после смены фрейма в {0x0} отрисовывается
 		// артефакт от предыдущего фрейма (из-за вызова ScrBuf.RestoreMacroChar)
-		ScrBuf.Flush();
+		Global->ScrBuf->Flush();
 		#endif
 	}
 	else
