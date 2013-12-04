@@ -82,6 +82,17 @@ struct FileListItem: NonCopyable
 	string strCustomData;
 
 	#if 1
+	//Maximus: оптимизация колонки C0
+	bool CustomDataLoaded;
+
+	void ClearCustomData()
+	{
+		strCustomData.clear();
+		CustomDataLoaded = false;
+	}
+	#endif
+
+	#if 1
 	//Maximus: координаты последней отрисовки
 	int PosX, PosY;
 	#endif
@@ -112,6 +123,10 @@ struct FileListItem: NonCopyable
 		AllocationSize(),
 		StreamsSize(),
 		ReparseTag()
+		#if 1
+		//Maximus: оптимизация колонки C0
+		,CustomDataLoaded()
+		#endif
 		#if 1
 		//Maximus: координаты последней отрисовки
 		, PosX(), PosY()
@@ -146,6 +161,10 @@ struct FileListItem: NonCopyable
 		AllocationSize(),
 		StreamsSize(),
 		ReparseTag()
+		#if 1
+		//Maximus: оптимизация колонки C0
+		,CustomDataLoaded()
+		#endif
 		#if 1
 		//Maximus: координаты последней отрисовки
 		, PosX(), PosY()
@@ -190,6 +209,10 @@ struct FileListItem: NonCopyable
 		strShortName.swap(rhs.strShortName);
 		std::swap(ReparseTag, rhs.ReparseTag);
 		strCustomData.swap(rhs.strCustomData);
+		#if 1
+		//Maximus: оптимизация колонки C0
+		std::swap(CustomDataLoaded, rhs.CustomDataLoaded);
+		#endif
 		#if 1
 		//Maximus: координаты последней отрисовки
 		std::swap(PosX, rhs.PosX);
@@ -369,6 +392,10 @@ public:
 	#if 1
 	//Maximus: многострочная статусная строка
 	virtual int GetPanelStatusHeight();
+	#endif
+	#if 1
+	//Maximus: оптимизация колонки C0
+	virtual void ClearCustomData() override;
 	#endif
 
 	static void SetFilePanelModes();

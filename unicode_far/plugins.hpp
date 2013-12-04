@@ -117,6 +117,10 @@ public:
 	int ProcessDialogEvent(int Event,FarDialogEvent *Param) const;
 	int ProcessConsoleInput(ProcessConsoleInputInfo *Info) const;
 	string GetCustomData(const string& Name) const;
+	#if 1
+	//Maximus: оптимизация колонки C0
+	bool HasGetCustomData();
+	#endif
 
 	int UnloadPlugin(Plugin *pPlugin, int From);
 	#if 1
