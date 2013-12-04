@@ -2185,7 +2185,12 @@ void Viewer::CacheLine( __int64 start, int length, bool have_eol )
 			}
 		}
 #if defined(_DEBUG) && 1 // it is legal case if file changed...
+		#if 1
+		//Maximus: для отладки
+		_ASSERTE( !reset );
+		#else
 		assert( !reset );
+		#endif
 #endif
 		if ( reset )
 		{
