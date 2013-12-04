@@ -175,8 +175,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 			if (MessageBox(NULL,msg,L"Assertion",MB_RETRYCANCEL|MB_SYSTEMMODAL)==IDRETRY) \
 				DebugBreak(); \
 		}
+	#undef _ASSERTE
 	#define _ASSERTE(x)  MY_ASSERT_EXPR((x), _CRT_WIDE(#x))
 #else
+	#undef _ASSERTE
 	#define _ASSERTE(x)
 #endif
 
