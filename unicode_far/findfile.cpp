@@ -3026,7 +3026,7 @@ FindFiles::FindFiles():
 		const wchar_t VSeparator[]={BoxSymbols[BS_T_H1V1],BoxSymbols[BS_V1],BoxSymbols[BS_V1],BoxSymbols[BS_V1],BoxSymbols[BS_B_H1V1],0};
 		#if 1
 		//Maximus: поддержка "узких" дисплеев
-		int BorderW = (74<(max(ScrX,60)-1))?74:(max(ScrX,60)-1); // 74
+		int BorderW = (74<(std::max((int)ScrX,60)-1))?74:(std::max((int)ScrX,60)-1); // 74
 		int ElemW = BorderW - 2; // 72
 		int ElemX2 = (BorderW + 4) / 2; // 40
 		#endif
