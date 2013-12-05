@@ -970,7 +970,7 @@ ShellCopy::ShellCopy(Panel *SrcPanel,        // исходная панель (активная)
 	#if 1
 	//Maximus: поддержка "узких" дисплеев
 	if (DLG_WIDTH >= (ScrX+3))
-		DLG_WIDTH = max((ScrX+3),40);
+		DLG_WIDTH = std::max((ScrX+3),40);
 	int ElemW = DLG_WIDTH - 6; // 70
 	#endif
 
