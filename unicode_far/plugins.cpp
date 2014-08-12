@@ -377,11 +377,13 @@ bool PluginManager::IsPluginValid(Plugin *pPlugin)
 {
 	Plugin *pTest;
 
-	for (size_t i = 0; i < PluginsCount; i++)
+	auto Iterator = Plugins.cbegin();
+	while (Iterator != Plugins.cend())
 	{
-		pTest = PluginsData[i];
+		pTest = Iterator->second.get();
 		if (pTest == pPlugin)
 			return true;
+		++Iterator;
 	}
 
 	return false;
