@@ -1024,7 +1024,7 @@ int PluginManager::ProcessDialogEvent(int Event, FarDialogEvent *Param)
 int PluginManager::ProcessConsoleInput(ProcessConsoleInputInfo *Info)
 {
 	//Maximus: Ќаверное нефиг плагинам ковыр€тьс€, когда клавиша на макрос назначаетс€
-	if (IsProcessAssignMacroKey)
+	if (Global->IsProcessAssignMacroKey)
 		return 0;
 
 	int nResult = 0;
