@@ -275,4 +275,9 @@ private:
 	Viewer* m_CurViewer;
 
 	friend class Plugin;
+
+	#ifdef _DEBUG
+	//Maximus: для отлдаки
+	static int PlCacheCfgEnum;
+	#endif
 };

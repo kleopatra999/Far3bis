@@ -69,6 +69,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 static const wchar_t *PluginsFolderName=L"Plugins";
 
+#ifdef _DEBUG
+//Maximus: для отладки
+int PluginManager::PlCacheCfgEnum = 0;
+#endif
+
 static const struct plugin_less
 {
 	bool operator ()(const Plugin* a, const Plugin *b)
@@ -549,8 +554,8 @@ void PluginManager::LoadPluginsFromCache()
 
 	#ifdef _DEBUG
 	//Maximus: Для отладки
-	_ASSERTE(PlCacheCfgEnum==0);
-	PlCacheCfgEnum++;
+	_ASSERTE(PluginManager::PlCacheCfgEnum==0);
+	PluginManager::PlCacheCfgEnum++;
 
 	string strTest;
 	DWORD nInitialCount = 0;
@@ -607,8 +612,8 @@ void PluginManager::LoadPluginsFromCache()
 
 	#ifdef _DEBUG
 	//Maximus: для отладки
-	PlCacheCfgEnum--;
-	_ASSERTE(PlCacheCfgEnum==0);
+	PluginManager::PlCacheCfgEnum--;
+	_ASSERTE(PluginManager::PlCacheCfgEnum==0);
 	#endif
 }
 
