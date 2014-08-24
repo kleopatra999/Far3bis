@@ -1036,7 +1036,7 @@ int PluginManager::ProcessConsoleInput(ProcessConsoleInputInfo *Info)
 		if (pPlugin->HasProcessConsoleInput())
 		{
 			//Maximus: вроде сейчас все ок
-			_ASSERTE(pPlugin == PluginsData[i]);
+			_ASSERTE(pPlugin == *i);
 			int n = pPlugin->ProcessConsoleInput(Info);
 			if (n == 1)
 			{
