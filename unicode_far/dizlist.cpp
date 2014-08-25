@@ -313,7 +313,7 @@ bool DizList::Flush(const string& Path,const string* DizName)
 			#if 1
 			//Maximus5: Ќа некоторых сетевых устройствах атрибуты вообще не устанавливаютс€
 			// ѕоэтому возвращаетс€ ошибка, и производитс€ попытка Elevation (что бессмысленно)
-			DisableElevation DE;
+			auto DE = std::make_unique<elevation::suppress>();
 			#endif
 			api::SetFileAttributes(strDizFileName,FILE_ATTRIBUTE_ARCHIVE);
 		}
@@ -407,7 +407,7 @@ bool DizList::Flush(const string& Path,const string* DizName)
 		#if 1
 		//Maximus5: Ќа некоторых сетевых устройствах атрибуты вообще не устанавливаютс€
 		// ѕоэтому возвращаетс€ ошибка, и производитс€ попытка Elevation (что бессмысленно)
-		DisableElevation DE;
+		auto DE = std::make_unique<elevation::suppress>();
 		#endif
 		api::SetFileAttributes(strDizFileName,FileAttr);
 	}
