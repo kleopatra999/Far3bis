@@ -923,7 +923,7 @@ BOOL SetCurrentDirectory(const string& PathName, bool Validate)
 	#ifdef _DEBUG
 	//Maximus: для отладки
 	OutputDebugStringW(L"apiSetCurrentDirectory(");
-	OutputDebugStringW(strDir.CPtr());
+	OutputDebugStringW(strDir.c_str());
 	OutputDebugStringW(L")\n");
 	#endif
 	
