@@ -110,7 +110,7 @@ bool PluginSynchro::Process()
 				Info.Event = SE_COMMONSYNCHRO;
 				Info.Param = param;
 
-				#ifdef _DEBUG
+				#if 0 // IsPluginValid undefined yet?
 				//Maximus: вроде должно быть исправлено, проверим
 				_ASSERTE(Global->CtrlObject->Plugins->IsPluginValid(pPlugin));
 				#endif
