@@ -421,6 +421,7 @@ void FileList::ShowFileList(int Fast)
 	if ((Opt.ShowPanelTotals || Opt.ShowPanelFree) &&
 	        (Opt.ShowPanelStatus || !SelFileCount))
 	{
+		//Maximus5: BUGBUG: ѕри старте сюда приходит неинициализированна€ структура (0xCCCCCCCCC)
 		ShowTotalSize(Info);
 	}
 
@@ -451,7 +452,12 @@ void FileList::ShowFileList(int Fast)
 
 	ShowScreensCount();
 
+	#if 1
+	//Maximus: убрал "!ProcessingPluginCommand", а то QView не обновл€етс€ после UpdatePos/Redraw из плагина
+	if (LastCurFile!=CurFile)
+	#else
 	if (!ProcessingPluginCommand && LastCurFile!=CurFile)
+	#endif
 	{
 		LastCurFile=CurFile;
 		UpdateViewPanel();
@@ -545,7 +551,7 @@ void FileList::ShowSelectedSize()
 	}
 }
 
-
+//Maximus5: BUGBUG: ѕри старте сюда приходит неинициализированна€ структура (0xCCCCCCCCC)
 void FileList::ShowTotalSize(OpenPanelInfo &Info)
 {
 	if (!Opt.ShowPanelTotals && PanelMode==PLUGIN_PANEL && !(Info.Flags & OPIF_REALNAMES))
@@ -867,6 +873,7 @@ int FileList::PrepareColumnWidths(unsigned __int64 *ColumnTypes, int *ColumnWidt
 
 	TotalWidth-=EmptyColumns;
 	int PanelTextWidth=X2-X1-1;
+	//Maximus5: BUGBUG: “ут получаетс€ "-1" при старте!
 
 	if (FullScreen)
 		PanelTextWidth=ScrX-1;
