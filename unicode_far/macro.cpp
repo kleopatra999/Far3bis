@@ -2869,7 +2869,12 @@ static bool menushowFunc(const TMacroFunction*)
 		{
 			Menu.SetFilterEnabled(true);
 			Menu.SetFilterString(VFindOrFilter.toString());
+			#if 1
+			//Maximus: расширенная фильтрация списков
+			Menu.FilterStringUpdated();
+			#else
 			Menu.FilterStringUpdated(true);
+			#endif
 			Menu.Show();
 		}
 		else
