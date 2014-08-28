@@ -639,6 +639,26 @@ DWORD GetInputRecord(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,bool 
 
 	if (Key)
 	{
+		#ifdef _DEBUG
+		//Maximus: ловим бага
+		static DWORD nIdle;
+		static bool bIdle;
+		if (Key && Key!=KEY_IDLE && Key!=KEY_NONE && Key!=KEY_GOTFOCUS && Key!=KEY_KILLFOCUS
+			&& rec->EventType == KEY_EVENT)
+		{
+			if (!bIdle && (GetTickCount() - nIdle) > 3000)
+			{
+				OutputDebugString(L"================= Idle ===================\n");
+				bIdle = true;
+			}
+			wchar_t szInfo[128];
+			wsprintf(szInfo, L"GetInputRecord = %s\n", _FARKEY_ToName(Key));
+			OutputDebugString(szInfo);
+			bIdle = false;
+			nIdle = GetTickCount();
+		}
+		#endif
+
 		if (CtrlObject)
 		{
 			ProcessConsoleInputInfo Info={sizeof(Info),PCIF_NONE,*rec};
@@ -683,6 +703,16 @@ DWORD GetInputRecord(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,bool 
 		//_KEYMACRO(CleverSysLog SL(L"GetInputRecord()"));
 		CtrlObject->Macro.RunStartMacro();
 		int MacroKey=CtrlObject->Macro.GetKey();
+
+		#ifdef _DEBUG
+		//Maximus: ловим бага
+		if (MacroKey && MacroKey!=KEY_IDLE && MacroKey!=KEY_NONE && MacroKey!=KEY_GOTFOCUS && MacroKey!=KEY_KILLFOCUS)
+		{
+			wchar_t szInfo[128];
+			wsprintf(szInfo, L"Macro.GetKey = 0x%08X\n", MacroKey);
+			OutputDebugString(szInfo);
+		}
+		#endif
 
 		if (MacroKey)
 		{
@@ -1878,6 +1908,18 @@ int TranslateKeyToVK(int Key,int &VirtKey,int &ControlState,INPUT_RECORD *Rec)
 		else if (FKey && FKey < WCHAR_MAX)
 		{
 			short Vk = VkKeyScan(static_cast<WCHAR>(FKey));
+			
+			#ifdef _DEBUG
+			//Maximus: для отладки
+			// На некоторых системах, почему-то обламывается VkKeyScan на '[', после этого
+			// начинает глючить CalcKeyCode
+			if (static_cast<WCHAR>(FKey) == L'[')
+			{
+				_ASSERTE(static_cast<WCHAR>(FKey) == L'[');
+				Vk = -1;
+			}
+			#endif
+			
 			if (Vk == -1)
 			{
 				for (i=0; i < ARRAYSIZE(Layout); ++i)
@@ -3292,6 +3334,11 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros,bool ProcessCtrlC
 				return KEY_RSHIFT;
 		}
 	}
+
+	#if 1
+	//Maximus: для отладки
+	_ASSERTE((!IntKeyState.CtrlPressed && !IntKeyState.AltPressed) || Char);
+	#endif
 
 	if (Char && (ModifAlt || ModifCtrl))
 		return Modif|Char;
