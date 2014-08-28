@@ -81,6 +81,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FarGuid.hpp"
 #include "configdb.hpp"
 
+#if 1
+//Maximus: дл€ отладки
+extern DWORD gnMainThreadId;
+#endif
+
 // дл€ диалога назначени€ клавиши
 struct DlgParam
 {
@@ -5117,8 +5122,19 @@ const wchar_t *eStackAsString(int)
 int KeyMacro::GetKey()
 {
 	MacroRecord *MR;
+#ifdef _DEBUG
+	//Maximus: дл€ отладки
+	MacroRecord MRD = {};
+	int dbgCurPCStack0 = CurPCStack, dbgCurPCStack = -99, dbgInitialLoops = -1, dbgBeginLoops = -1, dbgRunLoops = -1;
+	UNREFERENCED_PARAMETER(dbgCurPCStack0);
+#endif
 	TVar tmpVar;
 	TVarSet *tmpVarSet=nullptr;
+#ifdef _DEBUG
+	//Maximus: дл€ отладки
+	size_t jj = 0;
+	TMacroFunction ff = {};
+#endif
 
 	//_SVS(SysLog(L">KeyMacro::GetKey() InternalInput=%d Executing=%d (%p)",InternalInput,Work.Executing,FrameManager->GetCurrentFrame()));
 	if (InternalInput || !FrameManager->GetCurrentFrame())
@@ -5185,6 +5201,10 @@ int KeyMacro::GetKey()
 	}
 
 initial:
+	#ifdef _DEBUG
+	//Maximus: дл€ отладки
+	dbgInitialLoops++;
+	#endif
 
 	if (!(MR=Work.MacroWORK) || !MR->Buffer)
 	{
@@ -5192,17 +5212,34 @@ initial:
 		return 0; // RetKey; ?????
 	}
 
+#ifdef _DEBUG
+	//Maximus: дл€ отладки
+	MRD = *MR;
+	dbgCurPCStack = CurPCStack;
+	#define CHECKMR() _ASSERTE(MRD.Buffer==MR->Buffer && MRD.BufferSize==MR->BufferSize && ((&Work)==(&CtrlObject->Macro.Work)))
+#else
+	#define CHECKMR()
+#endif
+
 	//_SVS(SysLog(L"KeyMacro::GetKey() initial: Work.ExecLIBPos=%d (%d) %p",Work.ExecLIBPos,MR->BufferSize,Work.MacroWORK));
 
 	// ¬Ќ»ћјЌ»≈! ¬озможны глюки!
 	if (!Work.ExecLIBPos && !LockScr && (MR->Flags&MFLAGS_DISABLEOUTPUT))
 		LockScr=new LockScreen;
 
+	CHECKMR(); //Maximus: дл€ отладки
+
 begin:
+	#ifdef _DEBUG
+	//Maximus: дл€ отладки
+	dbgBeginLoops++;
+	CHECKMR(); //Maximus: дл€ отладки
+	#endif
 
 	if (!MR || Work.ExecLIBPos>=MR->BufferSize || !MR->Buffer)
 	{
 done:
+		CHECKMR(); //Maximus: дл€ отладки
 
 		/*$ 10.08.2000 skv
 			If we are in editor mode, and CurEditor defined,
@@ -5221,12 +5258,19 @@ done:
 		{
 			CtrlObject->Plugins->ProcessEditorEvent(EE_REDRAW,EEREDRAW_ALL,CtrlObject->Plugins->CurEditor->GetId());
 			CtrlObject->Plugins->CurEditor->Show();
+
+			CHECKMR(); //Maximus: дл€ отладки
 		}
 
 		if (CurPCStack < 0 && (Work.MacroWORKCount-1) <= 0) // mantis#351
 		{
+			CHECKMR(); //Maximus: дл€ отладки
+
 			if (LockScr) delete LockScr;
 			LockScr=nullptr;
+
+			CHECKMR(); //Maximus: дл€ отладки
+
 			if (MR)
 				MR->Flags&=~MFLAGS_DISABLEOUTPUT; // ????
 		}
@@ -5234,6 +5278,8 @@ done:
 		Clipboard::SetUseInternalClipboardState(false); //??
 		Work.Executing=MACROMODE_NOMACRO;
 		ReleaseWORKBuffer();
+
+		//CHECKMR(); -- был release //Maximus: дл€ отладки
 
 		// проверим - "а есть ли в временном стеке еще макрџсы"?
 		if (Work.MacroWORKCount > 0)
@@ -5252,6 +5298,8 @@ done:
 			Work.KeyProcess=0;
 		_KEYMACRO(SysLog(L"Work.KeyProcess=%d",Work.KeyProcess));
 
+		//CHECKMR(); -- был release //Maximus: дл€ отладки
+
 		if (Work.MacroWORKCount <= 0 && CurPCStack >= 0)
 		{
 			PopState();
@@ -5266,8 +5314,17 @@ done:
 		return KEY_NONE; // «десь ¬—≈√ƒј!
 	}
 
+	#ifdef _DEBUG
+	//Maximus: дл€ отладки
+	dbgRunLoops++;
+	#endif
+
+	CHECKMR(); //Maximus: дл€ отладки
+
 	if (!Work.ExecLIBPos)
 		Work.Executing=Work.MacroWORK[0].Flags&MFLAGS_NOSENDKEYSTOPLUGINS?MACROMODE_EXECUTING:MACROMODE_EXECUTING_COMMON;
+
+	CHECKMR(); //Maximus: дл€ отладки
 
 	// Mantis#0000581: ƒобавить возможность прервать выполнение макроса
 	{
@@ -5283,6 +5340,8 @@ done:
 		}
 	}
 
+	CHECKMR(); //Maximus: дл€ отладки
+
 	DWORD Key=!MR?MCODE_OP_EXIT:GetOpCode(MR,Work.ExecLIBPos++);
 
 	string value;
@@ -5294,20 +5353,25 @@ done:
 		goto return_func;
 	}
 
+	CHECKMR(); //Maximus: дл€ отладки
+
 	switch (Key)
 	{
 		case MCODE_OP_NOP:
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		case MCODE_OP_KEYS:                    // за этим кодом следуют ‘ј–овы коды клавиш
 		{
 			_KEYMACRO(SysLog(L"MCODE_OP_KEYS (Work.KeyProcess=%d)",Work.KeyProcess));
 			Work.KeyProcess++;
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
 		case MCODE_OP_ENDKEYS:                 // ‘ј–овы коды закончились.
 		{
 			_KEYMACRO(SysLog(L"MCODE_OP_ENDKEYS (Work.KeyProcess=%d)",Work.KeyProcess));
 			Work.KeyProcess--;
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
 		case KEY_ALTINS:
@@ -5397,6 +5461,7 @@ done:
 				tmpVar.toString();
 			}
 			VMStack.Push(tmpVar);
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
 
@@ -5411,6 +5476,7 @@ done:
 				Work.HistoryDisable=(DWORD)State.getInteger();
 
 			VMStack.Push((__int64)oldHistoryDisable);
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
 
@@ -5437,6 +5503,7 @@ done:
 			SetOpCode(MR,Work.ExecLIBPos+1,Counter.u.HighPart);
 			SetOpCode(MR,Work.ExecLIBPos+2,Counter.u.LowPart);
 			SetMacroConst(constRCounter,Counter.QuadPart);
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
 		case MCODE_OP_REP:
@@ -5450,6 +5517,7 @@ done:
 			Counter.QuadPart--;
 			SetOpCode(MR,Work.ExecLIBPos++,Counter.u.HighPart);
 			SetOpCode(MR,Work.ExecLIBPos++,Counter.u.LowPart);
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
 		case MCODE_OP_END:
@@ -5538,16 +5606,19 @@ done:
 		case MCODE_OP_DUP:        // продублировать верхнее значение в стеке
 			tmpVar=VMStack.Peek();
 			VMStack.Push(tmpVar);
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 
 		case MCODE_OP_SWAP:
 		{
 			VMStack.Swap();
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
 
 		case MCODE_OP_DISCARD:    // убрать значение с вершины стека
 			VMStack.Pop();
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 
 		/*
@@ -5561,6 +5632,7 @@ done:
 			if (tmpVarSet)
 				tmpVarSet->value=tmpVar;
 
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
         */
@@ -5604,6 +5676,7 @@ done:
 			if (tmpVarSet)
 				tmpVar=tmpVarSet->value;
 
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
 		case MCODE_OP_PUSHFLOAT:
@@ -5611,6 +5684,7 @@ done:
 			union { struct { DWORD l, h; }; double d; } u = {GetOpCode(MR,Work.ExecLIBPos+1), GetOpCode(MR,Work.ExecLIBPos)};
 			Work.ExecLIBPos+=2;
 			VMStack.Push(u.d);
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
 		case MCODE_OP_PUSHUNKNOWN:
@@ -5621,6 +5695,7 @@ done:
 			TVar *ptrVar=VMStack.Push(i64.QuadPart);
 			if (Key == MCODE_OP_PUSHUNKNOWN)
 				ptrVar->SetType(vtUnknown);
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
 		case MCODE_OP_PUSHCONST:  // ѕоложить на стек константу.
@@ -5633,6 +5708,7 @@ done:
 			else
 				VMStack.Push(0ll);
 
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
 		case MCODE_OP_PUSHVAR: // ѕоложить на стек переменную.
@@ -5647,17 +5723,20 @@ done:
 			else
 				VMStack.Push(0ll);
 
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
 		case MCODE_OP_PUSHSTR: // ѕоложить на стек строку-константу.
 		{
 			GetPlainText(value);
 			VMStack.Push(TVar(value.CPtr()));
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
 		// переходы
 		case MCODE_OP_JMP:
 			Work.ExecLIBPos=GetOpCode(MR,Work.ExecLIBPos);
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 
 		case MCODE_OP_JZ:
@@ -5671,6 +5750,7 @@ done:
 			else
 				Work.ExecLIBPos++;
 
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 
 			// операции
@@ -5903,6 +5983,7 @@ done:
 			}
 			else
 				VMStack.Push(-1);
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
 
@@ -5938,6 +6019,7 @@ done:
 				Result=f->VMProcess(Key,ToPtr(p2.i()),p1.i());
 
 			VMStack.Push(Result);
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
 
@@ -6008,6 +6090,7 @@ done:
 				tmpVar=L"";
 
 			VMStack.Push(tmpVar);
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
 
@@ -6055,6 +6138,7 @@ done:
 			}
 
 			VMStack.Push(Result);
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
 
@@ -6118,6 +6202,7 @@ done:
 			}
 
 			VMStack.Push(tmpVar);
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
 
@@ -6192,6 +6277,8 @@ done:
 			}
 			else
 				VMStack.Push(Ret);
+
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
 
@@ -6254,6 +6341,11 @@ done:
 					CtrlObject->Plugins->CallPluginItem(guid,&Data);
 					if (MR != Work.MacroWORK)
 						MR=Work.MacroWORK;
+					#ifdef _DEBUG
+					//Maximus: при выполнении плагина вполне мог вызыватьс€ макродвижок. ќбновить отладочную переменную.
+					if (!IsBadReadPtr(MR, sizeof(*MR)))
+						MRD = *MR;
+					#endif
 				}
 			}
 			else
@@ -6267,6 +6359,7 @@ done:
 			if (Work.Executing == MACROMODE_NOMACRO)
 				goto return_func;
 
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		}
 
@@ -6274,9 +6367,17 @@ done:
 		{
 			size_t J;
 
+			CHECKMR(); //Maximus: дл€ отладки
+
 			for (J=0; J < CMacroFunction; ++J)
 			{
 				const TMacroFunction *MFunc = KeyMacro::GetMacroFunction(J);
+				#ifdef _DEBUG
+				//Maximus: дл€ отладки
+				jj = J;
+				ff = *MFunc;
+				CHECKMR(); //Maximus: дл€ отладки
+				#endif
 				if (MFunc->Code == (TMacroOpCode)Key && MFunc->Func)
 				{
 					UINT64 Flags=MR->Flags;
@@ -6285,7 +6386,11 @@ done:
 					{
 						if (Flags&MFLAGS_DISABLEOUTPUT) // если был - удалим
 						{
+							CHECKMR(); //Maximus: дл€ отладки
+
 							if (LockScr) delete LockScr;
+
+							CHECKMR(); //Maximus: дл€ отладки
 
 							LockScr=nullptr;
 						}
@@ -6294,7 +6399,11 @@ done:
 					if ((MFunc->IntFlags&IMFF_DISABLEINTINPUT))
 						InternalInput++;
 
+					CHECKMR(); //Maximus: дл€ отладки
+
 					MFunc->Func(MFunc);
+
+					CHECKMR(); //Maximus: дл€ отладки
 
 					if ((MFunc->IntFlags&IMFF_DISABLEINTINPUT))
 						InternalInput--;
@@ -6303,9 +6412,15 @@ done:
 					{
 						if (Flags&MFLAGS_DISABLEOUTPUT) // если стал - залочим
 						{
+							CHECKMR(); //Maximus: дл€ отладки
+
 							if (LockScr) delete LockScr;
 
+							CHECKMR(); //Maximus: дл€ отладки
+
 							LockScr=new LockScreen;
+
+							CHECKMR(); //Maximus: дл€ отладки
 						}
 					}
 
@@ -6313,10 +6428,14 @@ done:
 				}
 			}
 
+			CHECKMR(); //Maximus: дл€ отладки
+
 			if (J >= CMacroFunction)
 			{
 				DWORD Err=0;
 				tmpVar=FARPseudoVariable(MR->Flags, Key, Err);
+
+				CHECKMR(); //Maximus: дл€ отладки
 
 				if (!Err)
 					VMStack.Push(tmpVar);
@@ -6325,12 +6444,14 @@ done:
 					if (Key >= KEY_MACRO_BASE && Key <= KEY_MACRO_ENDBASE)
 					{
 						// это не клавиша, а неопознанный OpCode, прерываем исполнение макроса
+						CHECKMR(); //Maximus: дл€ отладки
 						goto done;
 					}
 					break; // клавиши будем возвращать
 				}
 			}
 
+			CHECKMR(); //Maximus: дл€ отладки
 			goto begin;
 		} // END default
 	} // END: switch(Key)
@@ -6687,6 +6808,27 @@ void KeyMacro::ReadVarsConsts()
 
 void KeyMacro::SetMacroConst(const wchar_t *ConstName, const TVar& Value)
 {
+#if 0
+	//Maximus: дл€ отладки
+	if (ConstName == constMsButton)
+	{
+		static int LastMsButton;
+		if ((LastMsButton & 1) && (Value.i() == 0))
+		{
+			// LButton was Down, now - Up
+			LastMsButton = (int)Value.i();
+		}
+		else if (!LastMsButton && (Value.i() & 1))
+		{
+			// LButton was Up, now - Down
+			LastMsButton = (int)Value.i();
+		}
+		else
+		{
+			LastMsButton = (int)Value.i();
+		}
+	}
+#endif
 	varLook(glbConstTable, ConstName,1)->value = Value;
 }
 
@@ -7686,6 +7828,17 @@ int KeyMacro::GetMacroSettings(int Key,UINT64 &Flags,const wchar_t *Src,const wc
 
 int KeyMacro::PostNewMacro(const wchar_t *PlainText,UINT64 Flags,DWORD AKey,bool onlyCheck)
 {
+#ifdef _DEBUG
+	//Maximus: Ћовим бага
+	wchar_t szDbgInfo[255], *pch;
+	lstrcpy(szDbgInfo, L"KeyMacro::PostNewMacro: ");
+	lstrcpyn(szDbgInfo+lstrlen(szDbgInfo), PlainText, 128);
+	while ((pch = wcspbrk(szDbgInfo, L"\r\n\t"))!=NULL)
+		*pch = L' ';
+	lstrcat(szDbgInfo, L"\n");
+	OutputDebugString(szDbgInfo);
+#endif
+
 	MacroRecord NewMacroWORK2={};
 	wchar_t *Buffer=(wchar_t *)PlainText;
 	bool allocBuffer=false;
@@ -7865,6 +8018,10 @@ void MacroState::Init(TVarTable *tbl)
 int KeyMacro::PushState(bool CopyLocalVars)
 {
 	_KEYMACRO(CleverSysLog Clev(L"KeyMacro::PushState()"));
+
+	//Maximus: дл€ отладки
+	_ASSERTE(GetCurrentThreadId()==gnMainThreadId);
+
 	if (CurPCStack+1 >= STACKLEVEL)
 		return FALSE;
 
@@ -7879,6 +8036,10 @@ int KeyMacro::PushState(bool CopyLocalVars)
 int KeyMacro::PopState()
 {
 	_KEYMACRO(CleverSysLog Clev(L"KeyMacro::PopState()"));
+
+	//Maximus: дл€ отладки
+	_ASSERTE(GetCurrentThreadId()==gnMainThreadId);
+
 	if (CurPCStack < 0)
 		return FALSE;
 
@@ -7944,6 +8105,8 @@ int KeyMacro::GetIndex(int Key, string& strKey, int CheckMode, bool UseCommon, b
 								//_SVS(SysLog(L"GetIndex: Pos=%d MPtr->Key=0x%08X", Pos,MPtr->Key));
 								if (!(MPtr->Flags&MFLAGS_DISABLEMACRO))
 								{
+									//Maximus: дл€ отладки
+									_ASSERTE((((DWORD_PTR)MPtr->Callback)&0xFFFFFFFF)!=0xCDCDCDCD);
 								    if(!MPtr->Callback||MPtr->Callback(MPtr->Id,AKMFLAGS_NONE))
 								    	return Pos+((CheckMode >= 0)?IndexMode[CheckMode][0]:0);
 								}
@@ -8336,6 +8499,8 @@ void KeyMacro::Sort()
 {
 	typedef int (__cdecl *qsort_fn)(const void*,const void*);
 	// сортируем
+	//Maximus: дл€ отладки
+	_ASSERTE(MacroLIBCount>=0 && MacroLIBCount<99999);
 	far_qsort(MacroLIB,MacroLIBCount,sizeof(MacroRecord),(qsort_fn)SortMacros);
 	// перестраиваем индекс начал
 	int CurMode=MACRO_OTHER;
@@ -8359,6 +8524,11 @@ void KeyMacro::Sort()
 
 DWORD KeyMacro::GetOpCode(MacroRecord *MR,int PC)
 {
+	#ifdef _DEBUG
+	//Maximus: дл€ отладки
+	_ASSERTE(IsBadReadPtr(MR,sizeof(*MR))==FALSE);
+	_ASSERTE(MR->BufferSize<=1 || (PC>=0 && PC<MR->BufferSize));
+	#endif
 	DWORD OpCode=(MR->BufferSize > 1)?MR->Buffer[PC]:(DWORD)(intptr_t)MR->Buffer;
 	return OpCode;
 }
@@ -8472,6 +8642,29 @@ int KeyMacro::AddMacro(const wchar_t *PlainText,const wchar_t *Description,enum 
 	if (Area < MACRO_OTHER || Area > MACRO_COMMON)
 		return FALSE;
 
+#ifdef _DEBUG
+	//Maximus: дл€ отладки
+	{
+		string strDbgInfo=L"AddMacro: "+GuidToStr(PluginId)+L":";
+		wchar_t szID[32];
+		#ifdef _WIN64
+			swprintf(szID, L"x%08I64X", (DWORD_PTR)Id);
+		#else
+			swprintf(szID, L"x%08X", (DWORD)Id);
+		#endif
+		strDbgInfo+=szID; strDbgInfo+=L": ";
+		string strDbgMacro=PlainText;
+		strDbgInfo+=strDbgMacro.SubStr(0,128);
+		wchar_t *psz=strDbgInfo.GetBuffer();
+		wchar_t *p=psz-1;
+		while (p=wcspbrk(p+1, L"\r\n\t"))
+			*p=L' ';
+		strDbgInfo+=L"\n";
+		OutputDebugString(strDbgInfo);
+	}
+	_ASSERTE(MacroLIBCount>=0 && MacroLIBCount<99999);
+#endif
+
 	MacroRecord CurMacro={};
 	CurMacro.Flags=Area;
 	CurMacro.Flags|=Flags;
@@ -8497,6 +8690,8 @@ int KeyMacro::AddMacro(const wchar_t *PlainText,const wchar_t *Description,enum 
 			KeyMacro::Sort();
 			return TRUE;
 		}
+		//Maximus: дл€ отладки
+		_ASSERTE(MacroLIBCount>=0 && MacroLIBCount<99999);
 	}
 	return FALSE;
 }
