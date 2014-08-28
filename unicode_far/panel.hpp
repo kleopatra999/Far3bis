@@ -339,6 +339,11 @@ class Panel:public ScreenObject
 		BOOL NeedUpdatePanel(Panel *AnotherPanel);
 
 		#if 1
+		//Maximus: многострочная статусная область
+		virtual int GetPanelStatusHeight() { return 0; };
+		#endif
+
+		#if 1
 		//Maximus: оптимизация колонки C0
 		virtual void ClearCustomData() {};
 		#endif

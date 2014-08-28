@@ -2891,6 +2891,10 @@ int FileList::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 
 	FileListItem *CurPtr;
 	int RetCode;
+	#if 1
+	//Maximus: многострочная статусная строка
+	int StatusHeight = GetPanelStatusHeight();
+	#endif
 
 	if (IsVisible() && Opt.ShowColumnTitles && !MouseEvent->dwEventFlags &&
 	        MouseEvent->dwMousePosition.Y==Y1+1 &&
@@ -2966,7 +2970,12 @@ int FileList::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 		return(RetCode);
 
 	if (MouseEvent->dwMousePosition.Y>Y1+Opt.ShowColumnTitles &&
+	        #if 1
+	        //Maximus: многострочная статусная строка
+	        MouseEvent->dwMousePosition.Y<Y2-StatusHeight)
+	        #else
 	        MouseEvent->dwMousePosition.Y<Y2-2*Opt.ShowPanelStatus)
+	        #endif
 	{
 		SetFocus();
 
@@ -3062,14 +3071,24 @@ int FileList::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 		return TRUE;
 	}
 
+	#if 1
+	//Maximus: многострочная статусная строка
+	if (MouseEvent->dwMousePosition.Y>=Y2-StatusHeight)
+	#else
 	if (MouseEvent->dwMousePosition.Y>=Y2-2)
+	#endif
 	{
 		SetFocus();
 
 		if (!FileCount)
 			return TRUE;
 
+		#if 1
+		//Maximus: многострочная статусная строка
+		while (IsMouseButtonPressed() && IntKeyState.MouseY>=Y2-StatusHeight)
+		#else
 		while (IsMouseButtonPressed() && IntKeyState.MouseY>=Y2-2)
+		#endif
 		{
 			Down(1);
 

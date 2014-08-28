@@ -463,6 +463,11 @@ class FileList:public Panel
 		static string &AddPluginPrefix(FileList *SrcPanel,string &strPrefix);
 
 		#if 1
+		//Maximus: многострочная статусная строка
+		virtual int GetPanelStatusHeight();
+		#endif
+
+		#if 1
 		//Maximus: оптимизация колонки C0
 		virtual void ClearCustomData();
 		#endif
