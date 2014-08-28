@@ -860,7 +860,13 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 					if (Opt.ChangeDriveMode&DRIVE_SHOW_PLUGINS)
 					{
 						ChDisk.Hide();
+						#if 1
+						//Maximus: расширенное меню плагинов
+						if (CtrlObject->Plugins->Configure() < 0)   // значит вышли из Configure() по Ctrl-PgUp
+							return -1;
+						#else
 						CtrlObject->Plugins->Configure();
+						#endif
 					}
 
 					return SelPos;

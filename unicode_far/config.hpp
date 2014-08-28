@@ -631,6 +631,10 @@ struct Options
 	BoolOption AutoSaveSetup;
 	IntOption ChangeDriveMode;
 	BoolOption ChangeDriveDisconnectMode;
+	#if 1
+	//Maximus: расширенное меню плагинов
+	IntOption ChangePlugMenuMode;
+	#endif
 
 	BoolOption SaveHistory;
 	IntOption HistoryCount;

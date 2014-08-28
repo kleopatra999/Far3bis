@@ -57,6 +57,12 @@ enum
 	PLUGIN_FAROTHER
 };
 
+//Maximus: Расширенное меню плагинов
+enum
+{
+	CFGPLUGMENU_SHOW_DLLVER = 0x00000001,
+};
+
 // флаги для поля Plugin.WorkFlags
 enum PLUGINITEMWORKFLAGS
 {
@@ -241,7 +247,12 @@ class PluginManager
 		int UnloadPluginExternal(HANDLE hPlugin);
 		bool IsPluginUnloaded(Plugin* pPlugin);
 
+		#if 1
+		//Maximus: расширенное меню плагинов
+		void LoadPlugins(bool Redraw=false);
+		#else
 		void LoadPlugins();
+		#endif
 
 		Plugin *GetPlugin(const wchar_t *lpwszModuleName);
 		Plugin *GetPlugin(size_t PluginNumber);
@@ -259,7 +270,12 @@ class PluginManager
 
 		BOOL CheckFlags(DWORD NewFlags) { return Flags.Check(NewFlags); }
 
+		#if 1
+		//Maximus: расширенное меню плагинов
+		int Configure(int StartPos=0);
+		#else
 		void Configure(int StartPos=0);
+		#endif
 		void ConfigureCurrent(Plugin *pPlugin,const GUID& Guid);
 		int CommandsMenu(int ModalType,int StartPos,const wchar_t *HistoryName=nullptr);
 		bool GetDiskMenuItem(Plugin *pPlugin,size_t PluginItem,bool &ItemPresent, wchar_t& PluginHotkey, string &strPluginText, GUID &Guid);

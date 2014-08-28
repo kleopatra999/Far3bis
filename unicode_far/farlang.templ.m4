@@ -17669,6 +17669,86 @@ upd:"F4 - ustaw klawisz skrótu, F3 - information"
 "F4 - tecla de atajo, F3 - información"
 "F4 - nastavenie skratkového klávesu, F3 - informácia"
 
+MPluginHotKeyBottomCfg
+"F4,F3,Ctrl-R,Ctrl-PgUp,Del,Ctrl-1"
+"F4,F3,Ctrl-R,Ctrl-PgUp,Del,Ctrl-1"
+"F4,F3,Ctrl-R,Ctrl-PgUp,Del,Ctrl-1"
+"F4,F3,Ctrl-R,Ctrl-PgUp,Del,Ctrl-1"
+"F4,F3,Ctrl-R,Ctrl-PgUp,Del,Ctrl-1"
+"F4,F3,Ctrl-R,Ctrl-PgUp,Del,Ctrl-1"
+"F4,F3,Ctrl-R,Ctrl-PgUp,Del,Ctrl-1"
+"F4,F3,Ctrl-R,Ctrl-PgUp,Del,Ctrl-1"
+
+MPluginUnloadTitle
+"Выгрузить плагин"
+"Unload plugin"
+upd:"Unload plugin"
+upd:"Unload plugin"
+upd:"Unload plugin"
+upd:"Unload plugin"
+upd:"Unload plugin"
+upd:"Unload plugin"
+
+MPluginUnloadMsg
+"Вы хотите выгрузить плагин?"
+"Do you want to unload plugin?"
+upd:"Do you want to unload plugin?"
+upd:"Do you want to unload plugin?"
+upd:"Do you want to unload plugin?"
+upd:"Do you want to unload plugin?"
+upd:"Do you want to unload plugin?"
+upd:"Do you want to unload plugin?"
+
+MPluginUnloadPreloadTitle
+"Выгрузить плагин (PF_PRELOAD)"
+"Unload preloaded plugin"
+upd:"Unload preloaded plugin"
+upd:"Unload preloaded plugin"
+upd:"Unload preloaded plugin"
+upd:"Unload preloaded plugin"
+upd:"Unload preloaded plugin"
+upd:"Unload preloaded plugin"
+
+MPluginUnloadPreloadMsg
+"У выгружаемого плагина установлен признак PF_PRELOAD!"
+"This plugin have PF_PRELOAD flag!"
+upd:"This plugin have PF_PRELOAD flag!"
+upd:"This plugin have PF_PRELOAD flag!"
+upd:"This plugin have PF_PRELOAD flag!"
+upd:"This plugin have PF_PRELOAD flag!"
+upd:"This plugin have PF_PRELOAD flag!"
+upd:"This plugin have PF_PRELOAD flag!"
+
+MPluginUnloadPreloadMsg2
+"Вы действительно хотите выгрузить плагин?"
+"Are you sure to unload plugin?"
+upd:"Are you sure to unload plugin?"
+upd:"Are you sure to unload plugin?"
+upd:"Are you sure to unload plugin?"
+upd:"Are you sure to unload plugin?"
+upd:"Are you sure to unload plugin?"
+upd:"Are you sure to unload plugin?"
+
+MPluginRemoveTitle
+"Удалить плагин в корзину?"
+"Do you want to remove plugin to RecycleBin?"
+upd:"Do you want to remove plugin to RecycleBin?"
+upd:"Do you want to remove plugin to RecycleBin?"
+upd:"Do you want to remove plugin to RecycleBin?"
+upd:"Do you want to remove plugin to RecycleBin?"
+upd:"Do you want to remove plugin to RecycleBin?"
+upd:"Do you want to remove plugin to RecycleBin?"
+
+MPluginRemoveMsg
+"Удалить плагин"
+"Remove plugin"
+upd:"Remove plugin"
+upd:"Remove plugin"
+upd:"Remove plugin"
+upd:"Remove plugin"
+upd:"Remove plugin"
+upd:"Remove plugin"
+
 
 MRightCtrl
 l:

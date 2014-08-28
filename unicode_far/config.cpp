@@ -1134,6 +1134,10 @@ static struct FARConfig
 	{FSSF_PRIVATE,       NKeySystem,L"OEMPluginsSupport",  AddressAndType(Opt.LoadPlug.OEMPluginsSupport), Default(1)},
 #endif // NO_WRAPPER
 	{FSSF_SYSTEM,        NKeySystem,L"PluginMaxReadData", AddressAndType(Opt.PluginMaxReadData), Default(0x20000)},
+	#if 1
+	//Maximus: расширенное меню плагинов
+	{FSSF_PRIVATE,       NKeySystem,L"PlugMenuMode", AddressAndType(Opt.ChangePlugMenuMode), Default(0)},
+	#endif
 	{FSSF_PRIVATE,       NKeySystem,L"QuotedName", AddressAndType(Opt.QuotedName), Default(0xFFFFFFFFU)},
 	{FSSF_PRIVATE,       NKeySystem,L"QuotedSymbols", AddressAndType(Opt.strQuotedSymbols), Default(L" &()[]{}^=;!'+,`\xA0")},
 	{FSSF_PRIVATE,       NKeySystem,L"SaveHistory", AddressAndType(Opt.SaveHistory), Default(1)},

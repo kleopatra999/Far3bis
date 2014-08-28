@@ -61,6 +61,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "interf.hpp"
 #include "filelist.hpp"
 #include "message.hpp"
+#if 1
+//Maximus: расширенное меню плагинов
+#include "delete.hpp"
+#endif
 #include "FarGuid.hpp"
 #include "configdb.hpp"
 #include "FarDlgBuilder.hpp"
@@ -751,7 +755,12 @@ bool PluginManager::IsPluginValid(Plugin *pPlugin)
 }
 #endif
 
+#if 1
+//Maximus: поддержка CtrlR в меню плагинов
+void PluginManager::LoadPlugins(bool Redraw)
+#else
 void PluginManager::LoadPlugins()
+#endif
 {
 	TaskBar TB(false);
 	Flags.Clear(PSIF_PLUGINSLOADDED);
@@ -767,6 +776,8 @@ void PluginManager::LoadPlugins()
 		string strPluginsDir;
 		string strFullName;
 		FAR_FIND_DATA_EX FindData;
+		//Maximus: поддержка CtrlR в меню плагинов
+		size_t i=0;
 
 		// сначала подготовим список
 		if (Opt.LoadPlug.MainPluginDir) // только основные и персональные?
@@ -816,9 +827,37 @@ void PluginManager::LoadPlugins()
 			{
 				if (CmpName(L"*.dll",FindData.strFileName,false) && !(FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 				{
+					//Maximus: поддержка CtrlR в меню плагинов
+					if (Redraw)
+					{
+						for (i=0; i < PluginsCount; i++)
+						{
+							if (strFullName==PluginsData[i]->GetModuleName())
+								break;
+						}
+						if (i!=PluginsCount)
+							continue;
+					}
 					LoadPlugin(strFullName, FindData, false);
 				}
 			} // end while
+		}
+
+		//Maximus: поддержка CtrlR в меню плагинов
+		if (Redraw)
+		{
+			for (i=0; i < PluginsCount; i++)
+			{
+				string strModuleName = PluginsData[i]->GetModuleName();
+				if (apiGetFileAttributes(strModuleName)==INVALID_FILE_ATTRIBUTES)
+				{
+					Plugin *pPlugin = GetPlugin(strModuleName);
+					if (pPlugin)
+					{
+						UnloadPluginExternal(reinterpret_cast<HANDLE>(pPlugin));
+					}
+				}
+			}
 		}
 	}
 
@@ -1751,11 +1790,21 @@ struct PluginMenuItemData
    ! При настройке "параметров внешних модулей" закрывать окно с их
      списком только при нажатии на ESC
 */
+#if 1
+//Maximus: Расширенное меню плагинов
+int PluginManager::Configure(int StartPos)
+#else
 void PluginManager::Configure(int StartPos)
+#endif
 {
 	// Полиция 4 - Параметры внешних модулей
 	if (Opt.Policies.DisabledOptions&FFPOL_MAINMENUPLUGINS)
+		#if 1
+		//Maximus: Расширенное меню плагинов
+		return 1;
+		#else
 		return;
+		#endif
 
 	int PrevMacroMode = CtrlObject->Macro.GetMode();
 	CtrlObject->Macro.SetMode(MACRO_MENU);
@@ -1799,23 +1848,67 @@ void PluginManager::Configure(int StartPos)
 
 					for (size_t J=0; ; J++)
 					{
+						//Maximus: Расширенное меню плагинов
+						bool bNext=false;
+
 						if (bCached)
 						{
 							string strGuid;
 
 							if (!PlCacheCfg->GetPluginsConfigMenuItem(id, J, strName, strGuid))
+							#if 1
+							//Maximus: Расширенное меню плагинов
+							{
+								bNext=true;
+								goto NEXT;
+							}
+							#else
 								break;
+							#endif
 							if (!StrToGuid(strGuid,guid))
+							#if 1
+							//Maximus: Расширенное меню плагинов
+							{
+								bNext=true;
+								goto NEXT;
+							}
+							#else
 								break;
+							#endif
 						}
 						else
 						{
 							if (J >= Info.PluginConfig.Count)
+							#if 1
+							//Maximus: Расширенное меню плагинов
+							{
+								bNext=true;
+								goto NEXT;
+							}
+							#else
 								break;
+							#endif
 
 							strName = Info.PluginConfig.Strings[J];
 							guid = Info.PluginConfig.Guids[J];
 						}
+
+						#if 1
+						//Maximus: Расширенное меню плагинов
+NEXT:
+						if (bNext)
+						{
+							if (J==0)
+							{
+								// плагин не конфигурируемый
+								strName=PointToName(pPlugin->GetTitle());
+								if (strName.IsEmpty()) // если Title пуст - покажем в меню имя dll-ки.
+									strName=PointToName(pPlugin->GetModuleName());
+								guid=FarGuid;
+							}
+							else break;
+						}
+						#endif
 
 						GetPluginHotKey(pPlugin,guid,PluginsHotkeysConfig::CONFIG_MENU,strHotKey);
 						MenuItemEx ListItem;
@@ -1835,12 +1928,51 @@ void PluginManager::Configure(int StartPos)
 						#endif
 							ListItem.Flags=LIF_CHECKED|L'A';
 #endif // NO_WRAPPER
-						if (!HotKeysPresent)
-							ListItem.strName = strName;
-						else if (!strHotKey.IsEmpty())
-							ListItem.strName.Format(L"&%c%s  %s",strHotKey.At(0),(strHotKey.At(0)==L'&'?L"&":L""), strName.CPtr());
+
+						#if 1
+						//Maximus: Расширенное меню плагинов
+						if (!bNext)
+							ListItem.Flags|=MIF_SUBMENU;
+
+						wchar_t state;
+						if (pPlugin->CheckWorkFlags(PIWF_PRELOADED))
+							state=(pPlugin->GetFuncFlags()&PICFF_LOADED)?L'+':L'%';
 						else
+							state=(pPlugin->GetFuncFlags()&PICFF_LOADED)?L'*':L'-';
+
+						string strModuleVer=L"";
+						if (Opt.ChangePlugMenuMode&CFGPLUGMENU_SHOW_DLLVER)
+						{
+							string strVer;
+							GetPluginVersion(pPlugin->GetModuleName(),strVer);
+							strModuleVer.Format(L"%-20.20s%c%-13.13s%c", (const wchar_t*)PointToName(pPlugin->GetModuleName()),BoxSymbols[BS_V1],(const wchar_t*)strVer,BoxSymbols[BS_V1]);
+						}
+
+						string strNameTmp;
+						strNameTmp.Format(L"%c%c%c%s%s", BoxSymbols[BS_V1],state,BoxSymbols[BS_V1],(const wchar_t*)strModuleVer,(const wchar_t*)strName);
+						#endif
+
+						if (!HotKeysPresent)
+							#if 1
+							//Maximus: Расширенное меню плагинов
+							ListItem.strName=strNameTmp;
+							#else
+							ListItem.strName = strName;
+							#endif
+						else if (!strHotKey.IsEmpty())
+							#if 1
+							//Maximus: Расширенное меню плагинов
+							ListItem.strName.Format(L"&%c%s  %s", strHotKey.At(0), (strHotKey.At(0)==L'&'?L"&":L""), (const wchar_t*)strNameTmp);
+							#else
+							ListItem.strName.Format(L"&%c%s  %s",strHotKey.At(0),(strHotKey.At(0)==L'&'?L"&":L""), strName.CPtr());
+							#endif
+						else
+							#if 1
+							//Maximus: Расширенное меню плагинов
+							ListItem.strName.Format(L"   %s", (const wchar_t*)strNameTmp);
+							#else
 							ListItem.strName.Format(L"   %s", strName.CPtr());
+							#endif
 
 						PluginMenuItemData item;
 						item.pPlugin = pPlugin;
@@ -1850,9 +1982,19 @@ void PluginManager::Configure(int StartPos)
 				}
 
 				PluginList.AssignHighlights(FALSE);
+				#if 1
+				//Maximus: Расширенное меню плагинов
+				PluginList.SetBottomTitle(MSG(MPluginHotKeyBottomCfg));
+				#else
 				PluginList.SetBottomTitle(MSG(MPluginHotKeyBottom));
+				#endif
 				PluginList.ClearDone();
+				#if 1
+				//Maximus: Расширенное меню плагинов
+				PluginList.SortItems(0,HotKeysPresent?6:3);
+				#else
 				PluginList.SortItems(0,HotKeysPresent?3:0);
+				#endif
 				PluginList.SetSelectPos(StartPos,1);
 				NeedUpdateItems = false;
 			}
@@ -1865,6 +2007,8 @@ void PluginManager::Configure(int StartPos)
 				CtrlObject->Macro.SetMode(MACRO_MENU);
 				DWORD Key=PluginList.ReadInput();
 				int SelPos=PluginList.GetSelectPos();
+				//Maximus: для отладки
+				_ASSERTE((SelPos>=0 && SelPos<PluginList.GetItemCount()) || PluginList.GetShowItemCount()==0);
 				PluginMenuItemData *item = (PluginMenuItemData*)PluginList.GetUserData(nullptr,0,SelPos);
 
 				switch (Key)
@@ -1892,8 +2036,16 @@ void PluginManager::Configure(int StartPos)
 						if (item)
 						{
 							string strTitle;
+							#if 1
+							//Maximus: Расширенное меню плагинов
+							size_t nOffset;
+							if (!PluginList.GetItemPtr()->strName.Pos(nOffset,BoxSymbols[BS_V1]))
+								nOffset = 0;
+							strTitle = PluginList.GetItemPtr()->strName.CPtr()+nOffset+(Opt.ChangePlugMenuMode&CFGPLUGMENU_SHOW_DLLVER?38:3);
+							#else
 							int nOffset = HotKeysPresent?3:0;
 							strTitle = PluginList.GetItemPtr()->strName.CPtr()+nOffset;
+							#endif
 							RemoveExternalSpaces(strTitle);
 
 							if (SetHotKeyDialog(item->pPlugin, item->Guid, PluginsHotkeysConfig::CONFIG_MENU, strTitle))
@@ -1907,6 +2059,176 @@ void PluginManager::Configure(int StartPos)
 							}
 						}
 						break;
+
+					#if 1
+					//Maximus: Расширенное меню плагинов
+					case KEY_DEL:
+					case KEY_ALTDEL:
+					case KEY_RALTDEL:
+						if (item)
+						{
+							bool bUnload = (Key==KEY_DEL
+							                //&& (item->pPlugin->GetFuncFlags()&PICFF_LOADED) // а я действительно хочу его из списка убрать, пусть даже он в память еще не был загружен
+								              && (Message(0,2,MSG(MPluginUnloadTitle),MSG(MPluginUnloadMsg),MSG(MYes),MSG(MNo))==0))
+								              && (!item->pPlugin->CheckWorkFlags(PIWF_PRELOADED) || Message(MSG_WARNING,2,MSG(MPluginUnloadPreloadTitle),MSG(MPluginUnloadPreloadMsg),MSG(MPluginUnloadPreloadMsg2),MSG(MNo),MSG(MYes))==1)
+								              ;
+
+							bool bRemove = ((Key==KEY_ALTDEL || Key==KEY_RALTDEL) && (Message(0,2,MSG(MPluginRemoveTitle),MSG(MPluginRemoveTitle),MSG(MYes),MSG(MNo))==0));
+
+							if (bUnload || bRemove)
+							{
+								strPluginModuleName=item->pPlugin->GetModuleName();
+								bool bPanelPlugin = item->pPlugin->IsPanelPlugin();
+								if (bPanelPlugin)   // вдруг выгружаем плагин с панели, пытаемся хоть что-то сделать...
+								{
+									Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
+									if (ActivePanel->GetMode()==PLUGIN_PANEL)
+									{
+										PluginHandle *ph=(PluginHandle*)ActivePanel->GetPluginHandle();
+										if (ph->pPlugin->GetModuleName()==strPluginModuleName)
+										{
+											ActivePanel=CtrlObject->Cp()->ChangePanel(ActivePanel,FILE_PANEL,TRUE,TRUE);
+											ActivePanel->SetVisible(TRUE);
+											ActivePanel->Update(0);
+											Frame *CurFrame=FrameManager->GetCurrentFrame();
+											if (CurFrame && CurFrame->GetType()==MODALTYPE_PANELS)
+												ActivePanel->Show();
+											ActivePanel->SetFocus();
+										}
+									}
+									Panel *AnotherPanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
+									if (AnotherPanel->GetMode()==PLUGIN_PANEL)
+									{
+										PluginHandle *ph=(PluginHandle*)AnotherPanel->GetPluginHandle();
+										if (ph->pPlugin->GetModuleName()==strPluginModuleName)
+										{
+											AnotherPanel=CtrlObject->Cp()->ChangePanel(AnotherPanel,FILE_PANEL,FALSE,FALSE);
+											AnotherPanel->SetVisible(TRUE);
+											AnotherPanel->Update(0);
+											Frame *CurFrame=FrameManager->GetCurrentFrame();
+											if (CurFrame && CurFrame->GetType()==MODALTYPE_PANELS)
+												AnotherPanel->Show();
+										}
+									}
+								}
+								item->pPlugin->Unload(true);
+								RemovePlugin(item->pPlugin);
+
+								#if 0 // Если юзеру нужно загрузить плагин повторно - нажмет CtrlR или загрузит вручную
+								if (bUnload)
+								{
+									FAR_FIND_DATA_EX FindData;
+									if (apiGetFindDataEx((const wchar_t*)strPluginModuleName, FindData, false))
+									{
+										//Maximus: или таки bLoadToMem=true?
+										if (LoadPlugin((const wchar_t*)strPluginModuleName, FindData, false))
+											far_qsort(PluginsData, PluginsCount, sizeof(*PluginsData), PluginsSort);
+									}
+									else
+									{
+										SetMessageHelp(L"ErrLoadPlugin");
+										Message(MSG_WARNING|MSG_ERRORTYPE|MSG_NOPLUGINS,1,MSG(MError),MSG(MPlgLoadPluginError),strPluginModuleName,MSG(MOk));
+									}
+								}
+								#endif
+
+								if (bRemove)
+								{
+									const wchar_t *NamePtr=PointToName(strPluginModuleName);
+									strPluginModuleName.SetLength(NamePtr-(const wchar_t *)strPluginModuleName);
+									size_t Length=strPluginModuleName.GetLength();
+									if (Length>1 && IsSlash(strPluginModuleName.At(Length-1)) && strPluginModuleName.At(Length-2)!=L':')
+										strPluginModuleName.SetLength(Length-1);
+
+									int SaveOpt=Opt.DeleteToRecycleBin;
+									Opt.DeleteToRecycleBin=1;
+									if (!RemoveToRecycleBin((const wchar_t*)strPluginModuleName))
+										Message(MSG_WARNING|MSG_ERRORTYPE,1,MSG(MError),MSG(MCannotDeleteFolder),strPluginModuleName,MSG(MOk));
+									Opt.DeleteToRecycleBin=SaveOpt;
+								}
+								NeedUpdateItems=TRUE;
+								StartPos=SelPos;
+								PluginList.SetExitCode(SelPos);
+								PluginList.Show();
+							}
+						}
+						break;
+
+					case KEY_CTRLHOME:       case KEY_RCTRLHOME:
+					case KEY_CTRLSHIFTHOME:  case KEY_RCTRLSHIFTHOME:
+					case KEY_CTRLPGUP:       case KEY_RCTRLPGUP:
+					case KEY_CTRLSHIFTPGUP:  case KEY_RCTRLSHIFTPGUP:
+						if (item)
+						{
+							PluginList.Hide();
+							string strDirName=g_strFarPath+PluginsFolderName;
+							bool bChangeAnotherPanel=(Key==KEY_CTRLSHIFTPGUP || Key==KEY_RCTRLSHIFTPGUP || Key==KEY_CTRLSHIFTHOME || Key==KEY_RCTRLSHIFTHOME);
+
+							int MenuItemNumber=PluginList.GetItemCount();
+							if ((Key==KEY_CTRLPGUP || Key==KEY_RCTRLPGUP || Key==KEY_CTRLSHIFTPGUP || Key==KEY_RCTRLSHIFTPGUP) && (MenuItemNumber > 0) && (SelPos < MenuItemNumber))
+							{
+								strDirName=item->pPlugin->GetModuleName();
+								const wchar_t *NamePtr=PointToName(strDirName);
+								//string strFileName=NamePtr;
+								strDirName.SetLength(NamePtr-(const wchar_t *)strDirName);
+								size_t Length=strDirName.GetLength();
+								if (Length>1 && IsSlash(strDirName.At(Length-1)) && strDirName.At(Length-2)!=L':')
+									strDirName.SetLength(Length-1);
+							}
+							Panel *pPanel=CtrlObject->Cp()->ActivePanel;
+							if (bChangeAnotherPanel)
+								pPanel=CtrlObject->Cp()->GetAnotherPanel(pPanel);
+
+							if ((pPanel->GetType()!=FILE_PANEL) || (pPanel->GetMode()!=NORMAL_PANEL))
+							// Сменим панель на обычную файловую...
+							{
+								pPanel=CtrlObject->Cp()->ChangePanel(pPanel,FILE_PANEL,TRUE,TRUE);
+								pPanel->SetVisible(TRUE);
+								pPanel->Update(0);
+							}
+							pPanel->SetCurDir(strDirName,TRUE);
+							//pPanel->GoToFile(strFileName);
+							pPanel->Show();
+							pPanel->SetFocus();
+							CtrlObject->Macro.SetMode(PrevMacroMode);
+							return -1;       //  !!! для выхода с игнорированием Меню плагинов/дисков
+						}
+						break;
+
+					case KEY_CTRL1:
+					case KEY_RCTRL1:
+						if (item)
+						{
+							Opt.ChangePlugMenuMode ^= CFGPLUGMENU_SHOW_DLLVER;
+							PluginList.Hide();
+							NeedUpdateItems=TRUE;
+							StartPos=SelPos;
+							PluginList.SetExitCode(SelPos);
+							PluginList.Show();
+						}
+						break;
+
+					case KEY_CTRLR:
+					case KEY_RCTRLR:
+						if (item)
+						{
+							LoadPlugins(true); // перечитать папки плагинов
+							PluginList.Hide();
+							NeedUpdateItems=TRUE;
+							StartPos=SelPos;
+							PluginList.SetExitCode(SelPos);
+							PluginList.Show();
+						}
+						break;
+
+					case KEY_RIGHT:
+					case KEY_NUMPAD6:
+					case KEY_MSWHEEL_RIGHT:
+						StartPos=SelPos;
+						PluginList.SetExitCode(SelPos);
+						break;
+					//Maximus: end - Расширенное меню плагинов
+					#endif
 
 					default:
 						PluginList.ProcessInput();
@@ -1929,6 +2251,11 @@ void PluginManager::Configure(int StartPos)
 	}
 
 	CtrlObject->Macro.SetMode(PrevMacroMode);
+
+	#if 1
+	//Maximus: Расширенное меню плагинов
+	return 1;
+	#endif
 }
 
 int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *HistoryName)
@@ -2064,6 +2391,8 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 				CtrlObject->Macro.SetMode(MACRO_MENU);
 				DWORD Key=PluginList.ReadInput();
 				int SelPos=PluginList.GetSelectPos();
+				//Maximus: для отладки
+				_ASSERTE((SelPos>=0 && SelPos<PluginList.GetItemCount()) || PluginList.GetShowItemCount()==0);
 				PluginMenuItemData *item = (PluginMenuItemData*)PluginList.GetUserData(nullptr,0,SelPos);
 
 				switch (Key)
@@ -2114,8 +2443,22 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 							PluginList.Hide();
 							NeedUpdateItems = true;
 							StartPos = SelPos;
+
+							#if 1
+							//Maximus: расширенное меню плагинов
+							if (Configure() > 0)
+							{
+								PluginList.SetExitCode(SelPos);
+							}
+							else                              // значит вышли из Configure() по Ctrl-PgUp
+							{                                 // Меню плагинов надо пропустить
+								PluginList.SetExitCode(-1);
+								goto NEXT;
+							}
+							#else
 							PluginList.SetExitCode(SelPos);
 							Configure();
+							#endif
 							PluginList.Show();
 						}
 						break;
@@ -2147,6 +2490,11 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 			if (!NeedUpdateItems && PluginList.Done())
 				break;
 		}
+
+		#if 1
+		//Maximus: расширенное меню плагинов
+NEXT:
+		#endif
 
 		int ExitCode=PluginList.Modal::GetExitCode();
 		PluginList.Hide();
