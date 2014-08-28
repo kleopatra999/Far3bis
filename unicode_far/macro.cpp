@@ -6027,12 +6027,20 @@ done:
 		case MCODE_F_MENU_GETVALUE:       // S=Menu.GetValue([N])
 		case MCODE_F_MENU_GETHOTKEY:      // S=gethotkey([N])
 		{
+			#if 1
+			//Maximus: доп.инфа по текущему VMenu
+			parseParams(2,Params);
+			#else
 			parseParams(1,Params);
+			#endif
 			_KEYMACRO(CleverSysLog Clev(Key == MCODE_F_MENU_GETHOTKEY?L"MCODE_F_MENU_GETHOTKEY":(Key == MCODE_F_MENU_ITEMSTATUS?L"MCODE_F_MENU_ITEMSTATUS":L"MCODE_F_MENU_GETVALUE")));
+			#if 0
+			//Maximus: не требуется
 			tmpVar=Params[0];
 
 			if (!tmpVar.isInteger())
 				tmpVar=0ll;
+			#endif
 
 			int CurMMode=CtrlObject->Macro.GetMode();
 
@@ -6051,10 +6059,23 @@ done:
 					f=fo;
 
 				__int64 Result;
+				#if 1
+				//Maximus: доп.инфа по текущему VMenu
+				// Undefined or "-1" - current item, "0" - menu itself
+				TVarType typeIndex=Params[0].type();
+				__int64 MenuItemPos=Params[0].getInteger()-1;
+				if (typeIndex == vtInteger && MenuItemPos == -1)
+					MenuItemPos=-2;
+				else if (typeIndex == vtUnknown || (typeIndex == vtInteger && MenuItemPos < -2))
+					MenuItemPos=-1;
+				#endif
 
 				if (f)
 				{
+					#if 0
+					//Maximus: не требуется
 					__int64 MenuItemPos=tmpVar.i()-1;
+					#endif
 					if (Key == MCODE_F_MENU_GETHOTKEY)
 					{
 						if ((Result=f->VMProcess(Key,nullptr,MenuItemPos)) )
@@ -6068,6 +6089,25 @@ done:
 					}
 					else if (Key == MCODE_F_MENU_GETVALUE)
 					{
+						#if 1
+						//Maximus: доп.инфа по текущему VMenu
+						if (Params[1].isUnknown())
+							tmpVar=Params[1]; //TODO:
+						else
+							tmpVar=Params[1];
+						if (f->VMProcess(Key,&tmpVar,MenuItemPos))
+						{
+							if (tmpVar.isString())
+							{
+								string NewStr;
+								HiText2Str(NewStr, tmpVar.toString());
+								RemoveExternalSpaces(NewStr);
+								tmpVar=NewStr.CPtr();
+							}
+							else if (tmpVar.isUnknown())
+								tmpVar=L"";
+						}
+						#else
 						string NewStr;
 						if (f->VMProcess(Key,&NewStr,MenuItemPos))
 						{
@@ -6075,6 +6115,7 @@ done:
 							RemoveExternalSpaces(NewStr);
 							tmpVar=NewStr.CPtr();
 						}
+						#endif
 						else
 							tmpVar=L"";
 					}

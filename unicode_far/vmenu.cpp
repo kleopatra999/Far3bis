@@ -970,6 +970,32 @@ __int64 VMenu::VMProcess(int OpCode,void *vParam,__int64 iParam)
 		case MCODE_F_MENU_GETHOTKEY:
 		case MCODE_F_MENU_GETVALUE: // S=Menu.GetValue([N])
 		{
+			if ((OpCode == MCODE_F_MENU_GETVALUE) && (iParam == -2))
+			{
+				//TODO: Информация по самому меню !!!
+				__int64 iType=((TVar *)vParam)->getInteger(), iResult=0;
+				switch (iType)
+				{
+				case 1:
+					iResult=GetVisualPos(TopPos)+1;
+					break;
+				case 2:
+					iResult=X1;
+					break;
+				case 3:
+					iResult=Y1;
+					break;
+				case 4:
+					iResult=X2;
+					break;
+				case 5:
+					iResult=Y2;
+					break;
+				}
+				*(TVar *)vParam = TVar(iResult);
+				return 1;
+			}
+
 			int Param = (int)iParam;
 
 			if (Param == -1)
@@ -984,7 +1010,7 @@ __int64 VMenu::VMProcess(int OpCode,void *vParam,__int64 iParam)
 				{
 					if (OpCode == MCODE_F_MENU_GETVALUE)
 					{
-						*(string *)vParam = menuEx->strName;
+						*(TVar *)vParam = TVar(menuEx->strName.CPtr());
 						return 1;
 					}
 					else
