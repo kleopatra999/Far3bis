@@ -50,11 +50,22 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "plugins.hpp"
 #include "language.hpp"
 
+#if 1
+//Maximus: многострочная статусная область
+int ColumnTypeWidth[]={0, 6, 6, 8, 5, 14, 14, 14, 14, 6, 0, 0, 3, 3, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+#else
 int ColumnTypeWidth[]={0, 6, 6, 8, 5, 14, 14, 14, 14, 6, 0, 0, 3, 3, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+#endif
 static_assert(ARRAYSIZE(ColumnTypeWidth) == COLUMN_TYPES_COUNT, "wrong size of ColumnTypeWidth array");
 
+#if 1
+//Maximus: многострочная статусная область
+static const wchar_t *ColumnSymbol[]={L"N",L"S",L"P",L"D",L"T",L"DM",L"DC",L"DA",L"DE",L"A",L"Z",L"O",L"LN",L"F",L"G",L"X",L"C0",L"C1",L"C2",L"C3",L"C4",L"C5",L"C6",L"C7",L"C8",L"C9",L"B"};
+#else
 static const wchar_t *ColumnSymbol[]={L"N",L"S",L"P",L"D",L"T",L"DM",L"DC",L"DA",L"DE",L"A",L"Z",L"O",L"LN",L"F",L"G",L"X",L"C0",L"C1",L"C2",L"C3",L"C4",L"C5",L"C6",L"C7",L"C8",L"C9"};
+#endif
 static_assert(ARRAYSIZE(ColumnSymbol) == COLUMN_TYPES_COUNT, "wrong size of ColumnSymbol array");
+
 
 void ShellUpdatePanels(Panel *SrcPanel,BOOL NeedSetUpADir)
 {
@@ -401,6 +412,7 @@ void TextToViewSettings(const string& ColumnTitles,const string& ColumnWidths, s
 					}
 					else
 					{
+						#if 0
 						for (unsigned I=0; I<ARRAYSIZE(ColumnSymbol); I++)
 						{
 							if (strArgName == ColumnSymbol[I])
@@ -409,6 +421,43 @@ void TextToViewSettings(const string& ColumnTitles,const string& ColumnWidths, s
 								break;
 							}
 						}
+						#else
+						//Maximus: многострочная статусная область
+						if (strArgName.at(0) == L'B')
+						{
+							unsigned __int64 &ColumnType = Columns.back().type;
+							ColumnType=LINEBREAK_COLUMN;
+							const wchar_t *Ptr = strArgName.c_str()+1;
+
+							while (*Ptr)
+							{
+								switch (*Ptr)
+								{
+									case L'R':
+										if (!(ColumnType & COLUMN_CENTERALIGN))
+											ColumnType|=COLUMN_RIGHTALIGN;
+										break;
+									case L'C':
+										if (!(ColumnType & COLUMN_RIGHTALIGN))
+											ColumnType|=COLUMN_CENTERALIGN;
+										break;
+								}
+
+								Ptr++;
+							}
+						}
+						else
+						{
+							for (unsigned I=0; I<ARRAYSIZE(ColumnSymbol); I++)
+							{
+								if (strArgName == ColumnSymbol[I])
+								{
+									Columns.back().type = I;
+									break;
+								}
+							}
+						}
+						#endif
 					}
 				}
 			}
@@ -521,6 +570,17 @@ void ViewSettingsToText(const std::vector<column>& Columns, string &strColumnTit
 			if (i.type & COLUMN_RIGHTALIGN)
 				strType += L"R";
 		}
+
+		#if 1
+		//Maximus: многострочная статусная область
+		if (ColumnType==LINEBREAK_COLUMN)
+		{
+			if (i.type & COLUMN_CENTERALIGN)
+				strType += L"C";
+			else if (i.type & COLUMN_RIGHTALIGN)
+				strType += L"R";
+		}
+		#endif
 
 		strColumnTitles += strType;
 
