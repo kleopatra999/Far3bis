@@ -338,6 +338,11 @@ enum MACRO_OP_CODE
 	MCODE_V_PPANEL_DRIVETYPE,         // PPanel.DriveType - пассивная панель: тип привода
 	MCODE_V_APANEL_HEIGHT,            // APanel.Height - активная панель:  высота панели
 	MCODE_V_PPANEL_HEIGHT,            // PPanel.Height - пассивная панель: высота панели
+	#if 1
+	//Maximus: многострочная статусная строка
+	MCODE_V_APANEL_STATUSHEIGHT,      // APanel.StatusHeight - активная панель:  высота статусной области панели
+	MCODE_V_PPANEL_STATUSHEIGHT,      // PPanel.StatusHeight - пассивная панель: высота статусной области панели
+	#endif
 	MCODE_V_APANEL_COLUMNCOUNT,       // APanel.ColumnCount - активная панель:  количество колонок
 	MCODE_V_PPANEL_COLUMNCOUNT,       // PPanel.ColumnCount - пассивная панель: количество колонок
 	MCODE_V_APANEL_HOSTFILE,          // APanel.HostFile - активная панель:  имя Host-файла
