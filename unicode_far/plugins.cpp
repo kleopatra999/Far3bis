@@ -66,6 +66,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FarDlgBuilder.hpp"
 #include "DlgGuid.hpp"
 
+#pragma comment(lib, "version.lib")
+
 static const wchar_t *PluginsFolderName=L"Plugins";
 
 static int _cdecl PluginsSort(const void *el1,const void *el2);
