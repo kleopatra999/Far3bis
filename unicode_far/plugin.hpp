@@ -1227,8 +1227,6 @@ struct FarMacroValue
 	;
 };
 
-#ifdef FAR_USE_INTERNALS
-#if defined(MANTIS_0000466)
 struct FarMacroFunction
 {
 	unsigned __int64 Flags;
@@ -1241,7 +1239,7 @@ struct ProcessMacroFuncInfo
 {
 	size_t StructSize;
 	const wchar_t *Name;
-	const FarMacroValue *Params; // mem: Far
+	const struct FarMacroValue *Params; // mem: Far
 	int nParams;
 	struct FarMacroValue *Results; // mem: plugin
 	int nResults;
@@ -1273,9 +1271,6 @@ struct ProcessMacroInfo
 #endif
 	;
 };
-
-#endif
-#endif // END FAR_USE_INTERNALS
 
 struct FarGetValue
 {
@@ -2354,11 +2349,7 @@ struct PluginInfo
 	struct PluginMenuItem PluginMenu;
 	struct PluginMenuItem PluginConfig;
 	const wchar_t *CommandPrefix;
-#ifdef FAR_USE_INTERNALS
-#if defined(MANTIS_0000466)
 	const wchar_t *MacroFunctions;
-#endif
-#endif // END FAR_USE_INTERNALS
 };
 
 struct FarGetPluginInformation
@@ -2660,8 +2651,6 @@ struct ProcessEditorInputInfo
 	INPUT_RECORD Rec;
 };
 
-#ifdef FAR_USE_INTERNALS
-#if defined(MANTIS_0001687)
 typedef unsigned __int64 PROCESSCONSOLEINPUT_FLAGS;
 static const PROCESSCONSOLEINPUT_FLAGS
 	PCIF_FROMMAIN = 0x0000000000000001ULL,
@@ -2674,8 +2663,6 @@ struct ProcessConsoleInputInfo
 	INPUT_RECORD Rec;
 	HANDLE hPanel;
 };
-#endif
-#endif // END FAR_USE_INTERNALS
 
 struct ExitInfo
 {
@@ -2767,16 +2754,8 @@ extern "C"
 	int    WINAPI ProcessPanelEventW(const struct ProcessPanelEventInfo *Info);
 	int    WINAPI ProcessHostFileW(const struct ProcessHostFileInfo *Info);
 	int    WINAPI ProcessPanelInputW(const struct ProcessPanelInputInfo *Info);
-#ifdef FAR_USE_INTERNALS
-#if defined(MANTIS_0000466)
 	int    WINAPI ProcessMacroW(struct ProcessMacroInfo *Info);
-#endif
-#endif // END FAR_USE_INTERNALS
-#ifdef FAR_USE_INTERNALS
-#if defined(MANTIS_0001687)
 	int    WINAPI ProcessConsoleInputW(struct ProcessConsoleInputInfo *Info);
-#endif
-#endif // END FAR_USE_INTERNALS
 	int    WINAPI ProcessSynchroEventW(const struct ProcessSynchroEventInfo *Info);
 	int    WINAPI ProcessViewerEventW(const struct ProcessViewerEventInfo *Info);
 	int    WINAPI PutFilesW(const struct PutFilesInfo *Info);

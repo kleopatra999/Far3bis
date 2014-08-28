@@ -2343,6 +2343,27 @@ intptr_t WINAPI apiPluginsControl(HANDLE Handle, FAR_PLUGINS_CONTROL_COMMANDS Co
 		case PCTL_GETPLUGININFORMATION:
 			{
 				FarGetPluginInformation* Info = reinterpret_cast<FarGetPluginInformation*>(Param2);
+				#if 1
+				//Maximus: Проблема bis-сборки. Размер структуры Info->PInfo ожидается большего размера
+				if (Info
+					&& Info->StructSize == (sizeof(*Info) - (((((char*)&Info->GInfo) - (char*)&Info->PInfo)) - ((((char*)&Info->PInfo.MacroFunctions) - (char*)&Info->PInfo))))
+					&& static_cast<size_t>(Param1) > sizeof(FarGetPluginInformation))
+				{
+					Plugin* plugin = reinterpret_cast<Plugin*>(Handle);
+					if(plugin)
+					{
+						size_t nRc = CtrlObject->Plugins->GetPluginInformation(plugin, Info, Param1);
+						if (nRc)
+						{
+							Info->PInfo.StructSize = ((LPBYTE)&Info->PInfo.MacroFunctions) - ((LPBYTE)&Info->PInfo);
+							memmove(&Info->PInfo.MacroFunctions, &Info->GInfo, sizeof(Info->GInfo));
+						}
+						return nRc;
+					}
+
+				}
+				else
+				#endif
 				if (!Info || (CheckStructSize(Info) && static_cast<size_t>(Param1) > sizeof(FarGetPluginInformation)))
 				{
 					Plugin* plugin = reinterpret_cast<Plugin*>(Handle);
