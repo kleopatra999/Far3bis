@@ -751,6 +751,7 @@ void ViewerConfig(ViewerOptions &ViOpt,bool Local)
 			ViOpt.SaveCodepage = true; // codepage is part of saved position
 		if (ViOpt.TabSize<1 || ViOpt.TabSize>512)
 			ViOpt.TabSize = DefaultTabSize;
+		// Maximus5: BUGBUG: Код фара не рассчитан на локальные настройки окна Viewer.
 		if (!Opt.ViOpt.MaxLineSize)
 			Opt.ViOpt.MaxLineSize = ViewerOptions::eDefLineSize;
 		else if (Opt.ViOpt.MaxLineSize < ViewerOptions::eMinLineSize)

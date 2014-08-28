@@ -411,6 +411,15 @@ void Edit::FastShow()
 		if (Flags.Check(FEDITLINE_PASSWORDMODE))
 			wmemset(OutStr,L'*',OutStrLength);
 
+#if 0
+	//Maximus: в bis было так
+	if (Flags.Check(FEDITLINE_SHOWLINEBREAK) && Flags.Check(FEDITLINE_EDITORMODE) && (OutStrLength < EditLength))
+	{
+		const wchar_t* EndSeq = GetEOL();
+		if (EndSeq && *EndSeq)
+			OutStr[OutStrLength++]=L'\xB6'; //L'\x266A';
+	}
+#endif
 		if (Flags.Check(FEDITLINE_SHOWLINEBREAK) && Flags.Check(FEDITLINE_EDITORMODE) && (StrSize >= RealLeftPos) && (OutStrLength < EditLength))
 		{
 			switch(EndType)

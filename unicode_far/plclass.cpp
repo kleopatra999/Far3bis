@@ -853,6 +853,18 @@ int Plugin::Unload(bool bExitFAR)
 {
 	int nResult = TRUE;
 
+	#if 0
+	#ifdef _DEBUG
+	//Maximus: для отладки
+	PluginInfo Info = {sizeof(Info)};
+	if (!WorkFlags.Check(PIWF_CACHED))
+	{
+		// -- GetMsg обламывается
+		GetPluginInfo(&Info);
+	}
+	#endif
+	#endif
+
 	if (FuncFlags.Check(PICFF_LOADED))
 	{
 		if (bExitFAR)
@@ -863,6 +875,15 @@ int Plugin::Unload(bool bExitFAR)
 
 		if (!WorkFlags.Check(PIWF_CACHED))
 		{
+			#if 0
+			#ifdef _DEBUG
+			//Maximus: для отладки
+			bool bPreload = (Info.Flags & PF_PRELOAD);
+			extern PluginManager *PluginManagerForExitFar;
+			_ASSERTE(bPreload==false || PluginManagerForExitFar!=nullptr);
+			#endif
+			#endif
+
 			nResult = FreeLibrary(m_hModule);
 			ClearExports();
 		}

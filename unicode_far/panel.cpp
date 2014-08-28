@@ -2634,6 +2634,37 @@ bool Panel::GetShortcutInfo(ShortcutInfo& ShortcutInfo)
 		ShortcutInfo.PluginGuid = ph->pPlugin->GetGUID();
 		OpenPanelInfo Info;
 		CtrlObject->Plugins->GetOpenPanelInfo(hPlugin,&Info);
+#if 0
+	// вроде починили, больше не требуется
+#if 1
+		//Maximus
+		if(!(Info.Flags&OPIF_SHORTCUT))
+		{
+			bool IsWrapper=false;
+			PluginHandle *ph = (PluginHandle*)hPlugin;
+
+			#if 1
+			//Maximus: поддержка Far2Wrapper
+			if (ph->pPlugin->IsFar2Plugin())
+			{
+				IsWrapper=true;
+			}
+			#endif
+			#ifndef NO_WRAPPER
+			if (ph->pPlugin->IsOemPlugin())
+			{
+				IsWrapper=true;
+			}
+			#endif // NO_WRAPPER
+
+			if (!IsWrapper)
+				return false;
+		}
+#else
+		// было в Far
+		if(!(Info.Flags&OPIF_SHORTCUT)) return false;
+#endif
+#endif
 		ShortcutInfo.PluginFile = Info.HostFile;
 		ShortcutInfo.ShortcutFolder = Info.CurDir;
 		ShortcutInfo.PluginData = Info.ShortcutData;

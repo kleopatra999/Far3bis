@@ -1056,6 +1056,15 @@ int Execute(const string& CmdStr,  //  ом.строка дл€ исполнени€
 
 	if(!Silent)
 	{
+		#if 0
+		//Maximus: в bis было так
+		#if 1
+		//Maximus: не вставл€ть лишних пустых строк при запуске команд/программ
+		Console.ScrollScreenBuffer(1);
+		#else
+		Console.ScrollScreenBuffer(!DirectRun && !SeparateWindow?1:2);
+		#endif
+		#endif
 		Console.ScrollScreenBuffer(((DirectRun && dwSubSystem == IMAGE_SUBSYSTEM_WINDOWS_GUI) || SeparateWindow)?2:1);
 	}
 
@@ -1224,6 +1233,27 @@ int Execute(const string& CmdStr,  //  ом.строка дл€ исполнени€
 	{
 		ChangeVideoMode(ConSize.Y, ConSize.X);
 	}
+
+	#if 0
+						int PScrX=ScrX;
+						int PScrY=ScrY;
+						Sleep(1);
+						GetVideoMode(CurSize);
+
+						if (PScrX+1 == CurSize.X && PScrY+1 == CurSize.Y)
+						{
+							//_MANAGER(SysLog(-1,"GetInputRecord(WINDOW_BUFFER_SIZE_EVENT); return KEY_NONE"));
+							return TRUE;
+						}
+						else
+						{
+							PrevScrX=PScrX;
+							PrevScrY=PScrY;
+							//_MANAGER(SysLog(-1,"GetInputRecord(WINDOW_BUFFER_SIZE_EVENT); return KEY_CONSOLE_BUFFER_RESIZE"));
+							Sleep(1);
+							return ProcessKey(KEY_CONSOLE_BUFFER_RESIZE);
+						}
+	#endif
 
 	if (Opt.Exec.RestoreCPAfterExecute)
 	{
