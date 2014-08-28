@@ -87,6 +87,9 @@ WORD Colors::FarColorToConsoleColor(const FarColor& Color)
 				}
 				else
 				{
+					#ifdef _DEBUG
+					COLORREF clrDbg = i.Color;
+					#endif
 					int R = GetRValue(i.Color);
 					int G = GetGValue(i.Color);
 					int B = GetBValue(i.Color);
@@ -143,7 +146,7 @@ WORD Colors::FarColorToConsoleColor(const FarColor& Color)
 		Result = (IndexColors[0] << ConsoleBgShift) | (IndexColors[1] << ConsoleFgShift);
 	}
 
-	return (WORD)(Result | ((WORD)(Color.Flags) & ConsoleExtraMask));
+	return (WORD)(Result | ((WORD)(Color.Flags & ConsoleExtraMask)));
 }
 
 FarColor Colors::ConsoleColorToFarColor(WORD Color)
