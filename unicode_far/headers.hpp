@@ -196,6 +196,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	#define _ASSERTE(x)
 #endif
 
+//Maximus: Run-Time Check Failure #1 - A cast to a smaller data type has caused a loss of data.  If this was intentional, you should mask the source of the cast with the appropriate bitmask.
+#undef GetGValue
+#define GetGValue(rgb)      (LOBYTE(((rgb & 0xFFFF)) >> 8))
+
 #include "cpp.hpp"
 
 #include "common.hpp"
