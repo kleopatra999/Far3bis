@@ -263,7 +263,7 @@ inline void clear_and_shrink(T& container)
 template <typename T>
 bool CheckNullOrStructSize(const T* s) {_ASSERTE(!s || (s->StructSize >= sizeof(T))); return !s || (s->StructSize >= sizeof(T));}
 template <typename T>
-bool CheckStructSize(const T* s) {_ASSERTE(s && (s->StructSize >= sizeof(T))); return s && (s->StructSize >= sizeof(T));}
+bool CheckStructSize(const T* s) {_ASSERTE(!s || (s->StructSize >= sizeof(T))); return s && (s->StructSize >= sizeof(T));}
 #else
 template <typename T>
 bool CheckNullOrStructSize(const T* s) {return !s || (s->StructSize >= sizeof(T));}
