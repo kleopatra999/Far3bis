@@ -257,7 +257,7 @@ int GetSearchReplaceString(
 		Dialog Dlg(SearchDlg);
 		#if 1
 		//Maximus: поддержка "узких" дисплеев
-		Dlg.SetPosition(-1,-1,BorderW+4,12);
+		Dlg.SetPosition(-1,-1,BorderW+4,11);
 		#else
 		Dlg.SetPosition(-1,-1,76,11);
 		#endif
